@@ -1,0 +1,185 @@
+# 大规模成像星座任务规划框架
+
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+卫星任务规划研究的仿真与算法测试框架，支持大规模 Walker 星座的成像任务规划。
+
+## ✨ 核心特性
+
+- 🛰️ **大规模星座**：支持 50-500 颗卫星的 Walker 星座配置
+- 📸 **多种成像模式**：光学（推扫/敏捷）+ SAR（条带/聚束/滑动聚束）
+- 🎯 **丰富目标类型**：点目标、网格目标、动态目标（车辆/舰船）、区域目标
+- 📡 **地面站仿真**：支持数据回传约束建模
+- 🧬 **经典算法**：禁忌搜索、模拟退火、遗传算法、蚁群算法
+- ⚡ **跨平台开发**：Mac 上使用 Mock 开发，Windows 上对接 STK 10
+
+## 📦 安装
+
+```bash
+# 克隆项目
+git clone <repo-url>
+cd Paper1
+
+# 安装依赖
+pip install -r requirements.txt
+
+# Windows 额外依赖（用于 STK 10 接口）
+pip install pywin32
+```
+
+## 🚀 快速开始
+
+### 创建 Walker 星座
+
+```python
+from constellation_planning.stk import WalkerConstellationBuilder
+
+builder = WalkerConstellationBuilder(
+    name="MySatConstellation",
+    altitude_km=500,
+    inclination_deg=97.4,  # 太阳同步轨道
+    num_planes=6,
+    sats_per_plane=10
+)
+satellites = builder.build()  # 60 颗卫星
+print(f"Created {len(satellites)} satellites")
+```
+
+### 定义目标
+
+```python
+from constellation_planning.models import (
+    PointTarget, 
+    GridTarget, 
+    MovingTarget
+)
+
+# 点目标
+beijing = PointTarget(
+    id="PT001", 
+    name="Beijing", 
+    latitude=39.9, 
+    longitude=116.4,
+    priority=0.9
+)
+
+# 网格目标 (0.1°×0.1°)
+grid = GridTarget(
+    id="GT001",
+    name="GridCell",
+    center_lat=31.2,
+    center_lon=121.5,
+    priority=0.7
+)
+
+# 动态目标（舰船）
+ship = MovingTarget.create_ship(
+    id="SH001",
+    name="CargoShip",
+    waypoints=[
+        ("2026-01-01T00:00:00Z", 31.0, 122.0),
+        ("2026-01-01T06:00:00Z", 32.0, 123.0),
+        ("2026-01-01T12:00:00Z", 33.0, 124.0),
+    ],
+    speed_kmh=20.0
+)
+```
+
+### 运行规划算法
+
+```python
+from constellation_planning.algorithms import (
+    GeneticAlgorithm,
+    AlgorithmConfig
+)
+
+config = AlgorithmConfig(
+    max_iterations=500,
+    time_limit_sec=60.0,
+    random_seed=42
+)
+
+ga = GeneticAlgorithm(
+    config,
+    population_size=50,
+    crossover_rate=0.8,
+    mutation_rate=0.1
+)
+
+solution = ga.solve(observations, satellites)
+print(f"Best solution: {solution.objective_value}")
+```
+
+### 设置云层遮挡区域
+
+```python
+from constellation_planning.constraints import CloudConstraint
+
+cloud = CloudConstraint()
+# 添加云层覆盖区域（多边形）
+cloud.add_region([
+    (30.0, 120.0),
+    (30.0, 125.0),
+    (35.0, 125.0),
+    (35.0, 120.0),
+])
+```
+
+## 📁 项目结构
+
+```
+constellation_planning/
+├── config/          # 配置管理
+├── models/          # 数据模型（卫星、传感器、目标、地面站）
+├── stk/             # STK 接口层（Mock + STK10 COM）
+├── decomposition/   # 区域分解策略
+├── constraints/     # 约束检查（云层/可见性/存储/能源/下传）
+├── algorithms/      # 优化算法（TS/SA/GA/ACO）
+├── objectives/      # 优化目标函数
+├── evaluation/      # 性能评估与可视化
+└── utils/           # 工具函数
+```
+
+## 🔧 支持的算法
+
+| 算法 | 类名 | 关键参数 |
+|------|------|----------|
+| 禁忌搜索 | `TabuSearch` | `tabu_tenure` |
+| 模拟退火 | `SimulatedAnnealing` | `initial_temp`, `cooling_rate` |
+| 遗传算法 | `GeneticAlgorithm` | `population_size`, `crossover_rate`, `mutation_rate` |
+| 蚁群算法 | `AntColonyOptimization` | `num_ants`, `alpha`, `beta`, `rho` |
+
+## 🎯 支持的目标类型
+
+| 类型 | 类名 | 描述 |
+|------|------|------|
+| 点目标 | `PointTarget` | 固定位置地面目标 |
+| 网格目标 | `GridTarget` | 0.1°×0.1° 网格单元 |
+| 动态目标 | `MovingTarget` | 车辆/舰船，航点路径 |
+| 区域目标 | `AreaTarget` | 多边形区域，可分解 |
+
+## ⚙️ 约束类型
+
+- **可见性约束**：最小仰角、最大离轴角
+- **云层约束**：手动设置多边形云区（光学卫星）
+- **存储约束**：卫星存储容量限制
+- **能源约束**：电池电量限制
+- **下传约束**：地面站数据回传能力
+
+## 🖥️ 开发说明
+
+- **Mac 开发**：使用 `MockSTKConnector` 进行算法开发和测试
+- **Windows 部署**：切换到 `STK10Connector` 对接真实 STK
+
+```python
+from constellation_planning.stk import MockSTKConnector
+
+# Mac 开发
+with MockSTKConnector() as stk:
+    satellites = stk.create_walker_constellation(...)
+```
+
+## 📄 License
+
+MIT License
