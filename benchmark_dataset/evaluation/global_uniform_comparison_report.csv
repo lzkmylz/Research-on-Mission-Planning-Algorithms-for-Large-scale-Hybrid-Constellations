@@ -1,0 +1,5 @@
+﻿Algorithm,Completion Rate,Total Value,Runtime (s),Targets Covered,Completion Time (h),Avg Storage Usage,Avg Energy Usage
+GeneticAlgorithm,0.005,1982.9,1.83,5,23.2,0.006,0.006
+TabuSearch,0.005,1958.95,0.03,5,23.2,0.006,0.006
+SimulatedAnnealing,0.005,1986.89,0.0,5,23.2,0.006,0.006
+AntColony,0.005,1933.54,2.35,5,23.2,0.006,0.006
