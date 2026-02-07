@@ -64,6 +64,7 @@ solution = ga.solve(observations, satellites)
 
 **文档**: [benchmark_dataset/README.md](benchmark_dataset/README.md)
 **设计**: [docs/plans/2026-02-07-benchmark-dataset-design.md](docs/plans/2026-02-07-benchmark-dataset-design.md)
+**移植**: [docs/plans/2026-02-07-matlab-porting-plan.md](docs/plans/2026-02-07-matlab-porting-plan.md)
 
 **快速开始**:
 ```bash
