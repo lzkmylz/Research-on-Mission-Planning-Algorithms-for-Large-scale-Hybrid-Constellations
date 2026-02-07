@@ -143,12 +143,37 @@ constellation_planning/
 
 ## 🔧 支持的算法
 
-| 算法 | 类名 | 关键参数 |
-|------|------|----------|
-| 禁忌搜索 | `TabuSearch` | `tabu_tenure` |
-| 模拟退火 | `SimulatedAnnealing` | `initial_temp`, `cooling_rate` |
-| 遗传算法 | `GeneticAlgorithm` | `population_size`, `crossover_rate`, `mutation_rate` |
-| 蚁群算法 | `AntColonyOptimization` | `num_ants`, `alpha`, `beta`, `rho` |
+| 算法 | 类名 | 关键参数 | 描述 |
+|------|------|----------|------|
+| **AWCSAT** | `AWCSAT` | `outer_loops`, `initial_inner_loops`, `tabu_tenure` | 自适应波动温控禁忌SA，论文复现 |
+| 禁忌搜索 | `TabuSearch` | `tabu_tenure` | 经典禁忌搜索 |
+| 模拟退火 | `SimulatedAnnealing` | `initial_temp`, `cooling_rate` | 经典模拟退火 |
+| 遗传算法 | `GeneticAlgorithm` | `population_size`, `crossover_rate`, `mutation_rate` | 经典遗传算法 |
+| 蚁群算法 | `AntColonyOptimization` | `num_ants`, `alpha`, `beta`, `rho` | 蚁群优化 |
+
+### AWCSAT算法（推荐）
+
+基于论文《面向点群与大区域目标的成像卫星任务规划模型与算法研究》复现的自适应波动温控禁忌模拟退火算法：
+
+```python
+from constellation_planning.algorithms import AWCSAT, AWCSATConfig
+
+# 配置（论文推荐参数）
+config = AWCSATConfig(
+    outer_loops=3000,         # 外循环次数
+    initial_inner_loops=200,  # 初始内循环次数
+    tabu_tenure=5,            # 禁忌任期
+    initial_temp_coef=0.9     # 初始温度系数
+)
+
+# 可选：自定义目标函数
+def custom_objective(solution):
+    return sum(solution.encoding[:, 0])
+
+algo = AWCSAT(config, objective_func=custom_objective)
+result = algo.solve(tasks, satellites)
+print(f"Best: {result.objective_value}")
+```
 
 ## 🎯 支持的目标类型
 
