@@ -126,10 +126,31 @@ cloud.add_region([
 ])
 ```
 
-## 📁 项目结构
+## � 基准测试数据集
+
+本项目包含一套标准的大规模星座任务规划基准测试数据集（v1.0-baseline），用于算法性能评估与复现。
+
+- **星座**: 200颗混合星座（超高分/高分，光学/SAR）
+- **场景**: 4个典型场景（全球均匀/亚太热点/多热点/混合分布），各1000个目标
+- **评估**: 6项核心指标（完成率、总收益、资源利用率等）
+
+### 快速运行基准测试
+
+```bash
+# 生成数据并在所有场景运行所有算法
+python3 -m constellation_planning.benchmark.run_benchmark --run-all
+
+# 查看结果可视化
+open benchmark_dataset/evaluation/test_scenario_radar.png
+```
+
+详细文档: [benchmark_dataset/README.md](benchmark_dataset/README.md)
+
+## �📁 项目结构
 
 ```
 constellation_planning/
+├── benchmark/       # 基准测试数据集与评估工具
 ├── config/          # 配置管理
 ├── models/          # 数据模型（卫星、传感器、目标、地面站）
 ├── stk/             # STK 接口层（Mock + STK10 COM）
