@@ -11,6 +11,7 @@
 - 📸 **多种成像模式**：光学（推扫/敏捷）+ SAR（条带/聚束/滑动聚束）
 - 🎯 **丰富目标类型**：点目标、网格目标、动态目标（车辆/舰船）、区域目标
 - 📡 **地面站仿真**：支持数据回传约束建模
+- 📈 **优先级感知**：算法自动优化最大化任务总优先级收益（Total Priority Score）
 - 🧬 **经典算法**：禁忌搜索、模拟退火、遗传算法、蚁群算法
 - ⚡ **跨平台开发**：Mac 上使用 Mock 开发，Windows 上对接 STK 10
 
@@ -171,6 +172,8 @@ constellation_planning/
 | 模拟退火 | `SimulatedAnnealing` | `initial_temp`, `cooling_rate` | 经典模拟退火 |
 | 遗传算法 | `GeneticAlgorithm` | `population_size`, `crossover_rate`, `mutation_rate` | 经典遗传算法 |
 | 蚁群算法 | `AntColonyOptimization` | `num_ants`, `alpha`, `beta`, `rho` | 蚁群优化 |
+
+> **提示**: 所有基线算法（GA, TS, SA, ACO）均已内置优先级感知能力。如果观测任务包含 `priority` 或 `score` 属性，算法将自动以最大化**总分值**为目标进行规划，而非简单的任务计数。
 
 ### AWCSAT算法（推荐）
 
