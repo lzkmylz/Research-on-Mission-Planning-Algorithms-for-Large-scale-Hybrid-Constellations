@@ -60,11 +60,24 @@ solution = ga.solve(observations, satellites)
 
 ## 基准测试数据集
 
-### 概述
+**状态**: ✅ 已完成 (v1.0-baseline)
 
-为算法性能对比和论文实验验证创建标准测试数据集。
+**文档**: [benchmark_dataset/README.md](benchmark_dataset/README.md)
+**设计**: [docs/plans/2026-02-07-benchmark-dataset-design.md](docs/plans/2026-02-07-benchmark-dataset-design.md)
 
-**设计文档**: [docs/plans/2026-02-07-benchmark-dataset-design.md](file:///Users/zhaolin/Documents/职称论文/Paper1/docs/plans/2026-02-07-benchmark-dataset-design.md)
+**快速开始**:
+```bash
+# 运行基准测试
+python3 -m constellation_planning.benchmark.run_benchmark --run-all
+
+# 查看结果
+open benchmark_dataset/evaluation/test_scenario_radar.png
+```
+
+**评估结果**:
+- 包含4个场景（全球均匀、亚太热点、多热点、混合）
+- 包含4种算法（GA, Tabu, SA, ACO）
+- 生成CSV报告和可视化图表 (见 `benchmark_dataset/evaluation/`)
 
 ### 星座配置（200颗混合星座）
 
