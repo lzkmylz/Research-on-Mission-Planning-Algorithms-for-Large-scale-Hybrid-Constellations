@@ -1,0 +1,128 @@
+{
+  "ultra_high_res_optical": {
+    "type": "ultra_high_res_optical",
+    "count": 10,
+    "resolution_m": 0.5,
+    "swath_width_km": 12,
+    "altitude_km": 530,
+    "inclination_deg": 97.4,
+    "imaging_modes": [
+      "strip",
+      "stare",
+      "area"
+    ],
+    "agility": {
+      "roll_range_deg": [
+        -30,
+        30
+      ],
+      "pitch_range_deg": [
+        -15,
+        15
+      ],
+      "yaw_range_deg": [
+        -5,
+        5
+      ],
+      "maneuver_time_sec": 8,
+      "settling_time_sec": 4,
+      "max_slew_rate_deg_per_sec": 3.0
+    },
+    "constraints": {
+      "min_elevation_deg": 20,
+      "max_sun_angle_deg": 70,
+      "max_cloud_cover": 0.3,
+      "min_sun_elevation_deg": 10
+    },
+    "storage_capacity_gb": 256,
+    "downlink_rate_mbps": 300
+  },
+  "high_res_optical": {
+    "type": "high_res_optical",
+    "count": 90,
+    "resolution_m": 2.0,
+    "swath_width_km": 40,
+    "altitude_km": 645,
+    "inclination_deg": 98.0,
+    "imaging_modes": [
+      "strip",
+      "stare",
+      "area"
+    ],
+    "agility": {
+      "roll_range_deg": [
+        -25,
+        25
+      ],
+      "pitch_range_deg": [
+        -10,
+        10
+      ],
+      "maneuver_time_sec": 12,
+      "settling_time_sec": 5,
+      "max_slew_rate_deg_per_sec": 2.0
+    },
+    "constraints": {
+      "min_elevation_deg": 15,
+      "max_cloud_cover": 0.4
+    },
+    "storage_capacity_gb": 128,
+    "downlink_rate_mbps": 150
+  },
+  "ultra_high_res_sar": {
+    "type": "ultra_high_res_sar",
+    "count": 10,
+    "resolution_m": 1.0,
+    "swath_width_km": 10,
+    "altitude_km": 514,
+    "inclination_deg": 97.44,
+    "imaging_modes": [
+      "spotlight",
+      "stripmap",
+      "sliding_spotlight",
+      "scanSAR"
+    ],
+    "agility": {
+      "roll_range_deg": [
+        -35,
+        35
+      ],
+      "maneuver_time_sec": 10,
+      "max_slew_rate_deg_per_sec": 2.5
+    },
+    "constraints": {
+      "min_elevation_deg": 15,
+      "no_cloud_constraint": true
+    },
+    "storage_capacity_gb": 384,
+    "downlink_rate_mbps": 600
+  },
+  "high_res_sar": {
+    "type": "high_res_sar",
+    "count": 90,
+    "resolution_m": 5.0,
+    "swath_width_km": 80,
+    "altitude_km": 693,
+    "inclination_deg": 98.18,
+    "imaging_modes": [
+      "spotlight",
+      "stripmap",
+      "sliding_spotlight",
+      "scanSAR"
+    ],
+    "agility": {
+      "roll_range_deg": [
+        -30,
+        30
+      ],
+      "maneuver_time_sec": 15,
+      "max_slew_rate_deg_per_sec": 1.5
+    },
+    "constraints": {
+      "min_elevation_deg": 15,
+      "no_cloud_constraint": true
+    },
+    "storage_capacity_gb": 256,
+    "downlink_rate_mbps": 300
+  }
+}

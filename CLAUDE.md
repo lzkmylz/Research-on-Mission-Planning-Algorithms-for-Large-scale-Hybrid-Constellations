@@ -58,6 +58,52 @@ solution = ga.solve(observations, satellites)
 - **Windows 部署**: 切换到 `STK10Connector` 进行真实仿真
 - **云层约束**: 手动设置多边形区域，无需外部数据源
 
+## 基准测试数据集
+
+### 概述
+
+为算法性能对比和论文实验验证创建标准测试数据集。
+
+**设计文档**: [docs/plans/2026-02-07-benchmark-dataset-design.md](file:///Users/zhaolin/Documents/职称论文/Paper1/docs/plans/2026-02-07-benchmark-dataset-design.md)
+
+### 星座配置（200颗混合星座）
+
+| 类型 | 数量 | 分辨率 | 成像模式 |
+|------|------|--------|----------|
+| 超高分辨率光学 | 10 | 0.5m | strip/stare/area |
+| 高分辨率光学 | 90 | 2m | strip/stare/area |
+| 超高分辨率SAR | 10 | 1m | spotlight/stripmap/sliding_spotlight/scanSAR |
+| 高分辨率SAR | 90 | 5m | spotlight/stripmap/sliding_spotlight/scanSAR |
+
+### 测试场景（4个，各1000点目标，24h窗口）
+
+1. **全球均匀分布** - 基准性能测试
+2. **亚太热点** - 中国东部35% + 东南亚20% + 日韩15% + 印度及南亚30%
+3. **多热点** - 五大洲热点区域
+4. **混合分布** - 沿海聚集 + 内陆城市
+
+### 评估指标（6项）
+
+- 任务完成率
+- 运行时间
+- 总收益
+- 资源利用率
+- 重访次数分布
+- 完成观测时间
+
+### 使用方法
+
+```python
+# 生成数据集
+python -m constellation_planning.benchmark.run_benchmark --generate
+
+# 运行基准测试
+python -m constellation_planning.benchmark.run_benchmark --run-all
+
+# 查看对比结果
+python -m constellation_planning.benchmark.evaluation.visualizer
+```
+
 ## 详细计划
 
 参见 `.gemini/antigravity/brain/*/implementation_plan.md`
