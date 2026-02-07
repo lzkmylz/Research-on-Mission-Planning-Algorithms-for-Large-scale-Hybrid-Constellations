@@ -36,8 +36,15 @@ class SimulatedAnnealing(PlanningAlgorithm):
         if self.config.random_seed:
             random.seed(self.config.random_seed)
         
+        obs_list = list(observations)
+        # 建立 ID 到 分数的映射
+        self.score_map = {
+            obs.id: getattr(obs, 'score', getattr(obs, 'priority', 1.0)) 
+            for obs in obs_list
+        }
+        
         # 初始解
-        current = self._generate_initial_solution(observations, satellites)
+        current = self._generate_initial_solution(obs_list, satellites)
         self._update_best(current)
         
         temp = self.initial_temp
@@ -47,7 +54,7 @@ class SimulatedAnnealing(PlanningAlgorithm):
                 break
             
             # 生成邻域解
-            neighbor = self._generate_neighbor(current, observations, satellites)
+            neighbor = self._generate_neighbor(current, obs_list, satellites)
             
             # 计算能量差
             delta = neighbor.objective_value - current.objective_value
@@ -56,7 +63,10 @@ class SimulatedAnnealing(PlanningAlgorithm):
             if delta > 0:
                 current = neighbor
             else:
-                prob = math.exp(delta / temp)
+                try:
+                    prob = math.exp(delta / temp)
+                except OverflowError:
+                    prob = 0
                 if random.random() < prob:
                     current = neighbor
             
@@ -68,6 +78,10 @@ class SimulatedAnnealing(PlanningAlgorithm):
         
         return self.best_solution
     
+    def _calculate_score(self, solution: Solution) -> float:
+        """计算解的总分"""
+        return sum(self.score_map.get(obs_id, 1.0) for obs_id in solution.assignments)
+    
     def _generate_initial_solution(
         self,
         observations: List[Any],
@@ -78,7 +92,7 @@ class SimulatedAnnealing(PlanningAlgorithm):
         for obs in observations:
             if random.random() > 0.5 and hasattr(obs, 'satellite_id'):
                 solution.assignments[obs.id] = obs.satellite_id
-        solution.objective_value = len(solution.assignments)
+        solution.objective_value = self._calculate_score(solution)
         return solution
     
     def _generate_neighbor(
@@ -89,7 +103,7 @@ class SimulatedAnnealing(PlanningAlgorithm):
     ) -> Solution:
         """生成邻域解"""
         neighbor = current.copy()
-        obs = random.choice(list(observations))
+        obs = random.choice(observations)
         
         if obs.id in neighbor.assignments:
             del neighbor.assignments[obs.id]
@@ -97,5 +111,5 @@ class SimulatedAnnealing(PlanningAlgorithm):
             if hasattr(obs, 'satellite_id'):
                 neighbor.assignments[obs.id] = obs.satellite_id
         
-        neighbor.objective_value = len(neighbor.assignments)
+        neighbor.objective_value = self._calculate_score(neighbor)
         return neighbor
