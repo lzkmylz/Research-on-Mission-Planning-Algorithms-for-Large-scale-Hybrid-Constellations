@@ -10,6 +10,7 @@ from enum import Enum
 if TYPE_CHECKING:
     from .sensor import Sensor
     from .observation import ObservationWindow
+    from .satellite_type import SatelliteTypeConfig
 
 
 class SatelliteType(Enum):
@@ -35,6 +36,9 @@ class Satellite:
     # 传感器列表
     sensors: List["Sensor"] = field(default_factory=list)
     
+    # 型号配置引用（可选，用于获取详细能力参数）
+    type_config_id: Optional[str] = None  # 如 "UHR_OPTICAL", "HR_SAR"
+    
     # 机动能力
     max_roll_deg: float = 30.0      # 最大侧摆角
     max_pitch_deg: float = 30.0     # 最大俯仰角
@@ -48,6 +52,39 @@ class Satellite:
     storage_gb: float = 100.0       # 存储容量 (GB)
     current_storage_gb: float = 0.0 # 当前已用存储
     power_capacity_wh: float = 1000.0  # 电池容量 (Wh)
+    
+    def get_type_config(self) -> Optional["SatelliteTypeConfig"]:
+        """获取卫星型号配置
+        
+        Returns:
+            型号配置对象，如果没有设置则返回 None
+        """
+        if self.type_config_id is None:
+            return None
+        
+        from .satellite_type import get_satellite_type_config
+        return get_satellite_type_config(self.type_config_id)
+    
+    def get_imaging_switch_time(self) -> float:
+        """获取成像-成像转换时间 (秒)"""
+        config = self.get_type_config()
+        if config is not None:
+            return config.imaging_switch_time
+        return self.min_target_interval_sec  # 回退到默认值
+    
+    def get_imaging_to_downlink_time(self) -> float:
+        """获取成像-数传转换时间 (秒)"""
+        config = self.get_type_config()
+        if config is not None:
+            return config.imaging_to_downlink_time
+        return 10.0  # 默认值
+    
+    def get_downlink_switch_time(self) -> float:
+        """获取同星不同站数传转换时间 (秒)"""
+        config = self.get_type_config()
+        if config is not None:
+            return config.downlink_switch_time
+        return 3.0  # 默认值
     
     def can_image_sequence(
         self, 
@@ -81,4 +118,6 @@ class Satellite:
         self.current_storage_gb = 0.0
     
     def __repr__(self) -> str:
-        return f"Satellite({self.id}, {self.name}, {self.sat_type.value})"
+        type_info = f", config={self.type_config_id}" if self.type_config_id else ""
+        return f"Satellite({self.id}, {self.name}, {self.sat_type.value}{type_info})"
+

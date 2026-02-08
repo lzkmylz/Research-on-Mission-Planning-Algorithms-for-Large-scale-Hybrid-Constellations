@@ -9,9 +9,19 @@
 | 模块 | 功能 | 状态 |
 |------|------|------|
 | `models/` | 卫星、传感器、目标（点/网格/动态/区域）、地面站 | ✅ |
+| `models/satellite_type.py` | 卫星型号配置（转换时间、能源、存储、机动能力） | ✅ |
+| `models/imaging_mode.py` | 成像模式配置（数据速率、压缩比、功耗） | ✅ |
+| `models/antenna.py` | 天线模型（独立可用时间段、数传速率） | ✅ |
+| `models/ttc_station.py` | 测控数传站（多天线、上注能力） | ✅ |
+| `models/uplink.py` | 上注/数传动作模型（分段传输、数传计划） | ✅ |
 | `stk/` | STK 接口层（Mock + STK10 COM） | ✅ |
 | `decomposition/` | 区域分解策略（网格） | ✅ |
 | `constraints/` | 约束检查（云层/可见性/存储/能源/下传） | ✅ |
+| `constraints/transition.py` | 动作转换时间约束（成像-成像/成像-数传/数传站切换） | ✅ |
+| `constraints/antenna_resource.py` | 天线资源互斥约束 | ✅ |
+| `constraints/uplink_precedence.py` | 上注前置约束 | ✅ |
+| `scheduling/ttc_scheduler.py` | 基础测控数传调度器 | ✅ |
+| `scheduling/advanced_downlink.py` | 高级数传调度器（多天线聚合、分段传输） | ✅ |
 | `algorithms/` | 禁忌搜索、模拟退火、遗传算法、蚁群算法 | ✅ |
 | `objectives/` | 优化目标函数 | 🚧 |
 | `evaluation/` | 性能评估与可视化 | 🚧 |
