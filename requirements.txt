@@ -28,3 +28,13 @@ pytest-cov>=3.0.0
 
 # ======= Windows 额外依赖 =======
 # pywin32>=300  # 仅 Windows 需要，用于 STK COM 接口
+
+# ======= Orekit 可选依赖（跨平台高精度轨道计算）=======
+# 安装方式（需要 conda 环境）:
+#   conda install -c conda-forge orekit
+# 环境要求:
+#   - JDK 11+
+#   - Orekit 数据文件（会自动下载到当前目录）
+# 使用方式:
+#   在配置中设置 orbit_backend="orekit"
+

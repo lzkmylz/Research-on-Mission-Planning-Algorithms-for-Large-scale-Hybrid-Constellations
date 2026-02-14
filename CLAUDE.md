@@ -64,8 +64,9 @@ solution = ga.solve(observations, satellites)
 
 ## 开发说明
 
-- **Mac 开发**: 使用 `MockSTKConnector` 进行算法开发
-- **Windows 部署**: 切换到 `STK10Connector` 进行真实仿真
+- **后端切换**: 使用 `get_connector(settings)` 工厂函数，通过 `orbit_backend` 配置选择后端
+- **Mac 开发**: `orbit_backend="mock"` 快速开发，`orbit_backend="orekit"` 精确仿真
+- **Windows 部署**: `orbit_backend="stk"` 对接真实 STK 10
 - **云层约束**: 手动设置多边形区域，无需外部数据源
 
 ## 基准测试数据集

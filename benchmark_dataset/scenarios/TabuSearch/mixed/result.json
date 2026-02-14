@@ -2,11 +2,11 @@
   "metadata": {
     "algorithm": "TabuSearch",
     "scenario": "mixed",
-    "timestamp": "2026-02-07T20:58:54.239962",
+    "timestamp": "2026-02-12T20:46:57.714196",
     "start_time": "2024-06-01T00:00:00Z"
   },
   "execution": {
-    "runtime_seconds": 0.02,
+    "runtime_seconds": 0.01,
     "iterations_completed": 50
   },
   "observations": [
@@ -14,218 +14,218 @@
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_001",
       "observation_time": "2024-06-01T03:00:00+00:00",
-      "duration": 246,
-      "elevation_deg": 71.3607785592427
+      "duration": 428,
+      "elevation_deg": 40.70743650158045
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_001",
       "observation_time": "2024-06-01T12:36:00+00:00",
-      "duration": 324,
-      "elevation_deg": 44.64650573297469
+      "duration": 238,
+      "elevation_deg": 53.11504502424866
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_001",
       "observation_time": "2024-06-01T22:12:00+00:00",
-      "duration": 435,
-      "elevation_deg": 39.09057963402799
+      "duration": 167,
+      "elevation_deg": 52.60580377752038
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_002",
-      "observation_time": "2024-06-01T02:00:00+00:00",
-      "duration": 441,
-      "elevation_deg": 48.37857501442486
+      "observation_time": "2024-06-01T07:00:00+00:00",
+      "duration": 478,
+      "elevation_deg": 47.320677011990064
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_002",
-      "observation_time": "2024-06-01T11:36:00+00:00",
-      "duration": 460,
-      "elevation_deg": 74.80581006917754
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_002",
-      "observation_time": "2024-06-01T21:12:00+00:00",
-      "duration": 254,
-      "elevation_deg": 42.873868816828164
+      "observation_time": "2024-06-01T16:36:00+00:00",
+      "duration": 201,
+      "elevation_deg": 39.306641013742244
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_003",
-      "observation_time": "2024-06-01T05:00:00+00:00",
-      "duration": 243,
-      "elevation_deg": 79.30484011636175
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_003",
-      "observation_time": "2024-06-01T14:36:00+00:00",
-      "duration": 341,
-      "elevation_deg": 67.54361964199582
-    },
-    {
-      "target_id": "TGT_0049",
-      "satellite_id": "SAT_ULTRA_HI_003",
-      "observation_time": "2024-06-01T22:12:00+00:00",
-      "duration": 380,
-      "elevation_deg": 59.121140084036355
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_004",
       "observation_time": "2024-06-01T03:00:00+00:00",
-      "duration": 145,
-      "elevation_deg": 29.12631921261339
+      "duration": 171,
+      "elevation_deg": 31.319142422426324
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_003",
+      "observation_time": "2024-06-01T12:36:00+00:00",
+      "duration": 280,
+      "elevation_deg": 61.84990565723428
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_003",
+      "observation_time": "2024-06-01T22:12:00+00:00",
+      "duration": 286,
+      "elevation_deg": 54.30785851909407
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_004",
-      "observation_time": "2024-06-01T12:36:00+00:00",
-      "duration": 234,
-      "elevation_deg": 77.88946630225462
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_004",
-      "observation_time": "2024-06-01T22:12:00+00:00",
-      "duration": 432,
-      "elevation_deg": 27.57477618856332
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_005",
-      "observation_time": "2024-06-01T01:00:00+00:00",
-      "duration": 443,
-      "elevation_deg": 77.92121541061123
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_005",
-      "observation_time": "2024-06-01T10:36:00+00:00",
-      "duration": 245,
-      "elevation_deg": 39.91968223588182
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_005",
-      "observation_time": "2024-06-01T20:12:00+00:00",
-      "duration": 321,
-      "elevation_deg": 26.02187612989114
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_006",
-      "observation_time": "2024-06-01T03:00:00+00:00",
-      "duration": 293,
-      "elevation_deg": 70.70236538662294
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_006",
-      "observation_time": "2024-06-01T12:36:00+00:00",
-      "duration": 435,
-      "elevation_deg": 25.982701864518702
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_006",
-      "observation_time": "2024-06-01T22:12:00+00:00",
-      "duration": 298,
-      "elevation_deg": 74.62650066178801
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_007",
       "observation_time": "2024-06-01T00:00:00+00:00",
-      "duration": 268,
-      "elevation_deg": 20.920855874915638
+      "duration": 402,
+      "elevation_deg": 34.01374676347359
     },
     {
       "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_007",
+      "satellite_id": "SAT_ULTRA_HI_004",
       "observation_time": "2024-06-01T09:36:00+00:00",
-      "duration": 147,
-      "elevation_deg": 28.649324958016848
+      "duration": 216,
+      "elevation_deg": 66.53266850595553
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_004",
+      "observation_time": "2024-06-01T19:12:00+00:00",
+      "duration": 144,
+      "elevation_deg": 22.618837945838116
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_005",
+      "observation_time": "2024-06-01T06:00:00+00:00",
+      "duration": 186,
+      "elevation_deg": 64.68230909391175
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_005",
+      "observation_time": "2024-06-01T15:36:00+00:00",
+      "duration": 184,
+      "elevation_deg": 62.31367286150015
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_006",
+      "observation_time": "2024-06-01T00:00:00+00:00",
+      "duration": 476,
+      "elevation_deg": 68.68453415389261
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_006",
+      "observation_time": "2024-06-01T09:36:00+00:00",
+      "duration": 161,
+      "elevation_deg": 43.16472514945894
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_006",
+      "observation_time": "2024-06-01T19:12:00+00:00",
+      "duration": 377,
+      "elevation_deg": 59.82132976907208
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_007",
-      "observation_time": "2024-06-01T19:12:00+00:00",
-      "duration": 407,
-      "elevation_deg": 72.25597828095316
+      "observation_time": "2024-06-01T03:00:00+00:00",
+      "duration": 431,
+      "elevation_deg": 69.2448531025733
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_007",
+      "observation_time": "2024-06-01T12:36:00+00:00",
+      "duration": 424,
+      "elevation_deg": 78.84908831958711
+    },
+    {
+      "target_id": "TGT_0050",
+      "satellite_id": "SAT_ULTRA_HI_007",
+      "observation_time": "2024-06-01T22:12:00+00:00",
+      "duration": 256,
+      "elevation_deg": 49.71971897698541
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_008",
-      "observation_time": "2024-06-01T01:00:00+00:00",
-      "duration": 278,
-      "elevation_deg": 78.19740764246637
+      "observation_time": "2024-06-01T09:00:00+00:00",
+      "duration": 331,
+      "elevation_deg": 22.221176680734573
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_008",
-      "observation_time": "2024-06-01T10:36:00+00:00",
-      "duration": 275,
-      "elevation_deg": 24.48969489462253
-    },
-    {
-      "target_id": "TGT_0050",
-      "satellite_id": "SAT_ULTRA_HI_008",
-      "observation_time": "2024-06-01T20:12:00+00:00",
-      "duration": 400,
-      "elevation_deg": 66.8915174763815
+      "observation_time": "2024-06-01T18:36:00+00:00",
+      "duration": 367,
+      "elevation_deg": 50.137469007977955
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_009",
       "observation_time": "2024-06-01T05:00:00+00:00",
-      "duration": 382,
-      "elevation_deg": 35.90136677260453
+      "duration": 410,
+      "elevation_deg": 55.41082575857402
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_009",
       "observation_time": "2024-06-01T14:36:00+00:00",
-      "duration": 264,
-      "elevation_deg": 57.39556403131988
+      "duration": 391,
+      "elevation_deg": 72.18201880173292
     },
     {
-      "target_id": "TGT_0048",
+      "target_id": "TGT_0047",
       "satellite_id": "SAT_ULTRA_HI_009",
-      "observation_time": "2024-06-01T21:12:00+00:00",
-      "duration": 415,
-      "elevation_deg": 43.8489994331464
+      "observation_time": "2024-06-01T19:12:00+00:00",
+      "duration": 208,
+      "elevation_deg": 72.45142244325851
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_010",
       "observation_time": "2024-06-01T07:00:00+00:00",
-      "duration": 306,
-      "elevation_deg": 24.81891923476694
+      "duration": 130,
+      "elevation_deg": 46.41837258624063
     },
     {
       "target_id": "TGT_0050",
       "satellite_id": "SAT_ULTRA_HI_010",
       "observation_time": "2024-06-01T16:36:00+00:00",
-      "duration": 345,
-      "elevation_deg": 39.71393533900738
+      "duration": 247,
+      "elevation_deg": 51.557065208453686
     },
     {
       "target_id": "TGT_0049",
+      "satellite_id": "SAT_ULTRA_HI_002",
+      "observation_time": "2024-06-01T22:12:00+00:00",
+      "duration": 411,
+      "elevation_deg": 47.41568446845453
+    },
+    {
+      "target_id": "TGT_0049",
+      "satellite_id": "SAT_ULTRA_HI_005",
+      "observation_time": "2024-06-01T22:12:00+00:00",
+      "duration": 358,
+      "elevation_deg": 63.346629654238555
+    },
+    {
+      "target_id": "TGT_0049",
+      "satellite_id": "SAT_ULTRA_HI_008",
+      "observation_time": "2024-06-01T22:12:00+00:00",
+      "duration": 227,
+      "elevation_deg": 44.59871718478186
+    },
+    {
+      "target_id": "TGT_0046",
       "satellite_id": "SAT_ULTRA_HI_010",
-      "observation_time": "2024-06-01T21:12:00+00:00",
-      "duration": 283,
-      "elevation_deg": 60.461449709240576
+      "observation_time": "2024-06-01T20:12:00+00:00",
+      "duration": 410,
+      "elevation_deg": 59.286879585664025
     }
   ],
   "metrics": {
-    "task_completion_rate": 0.003,
-    "runtime_seconds": 0.02,
-    "total_value": 2231.45,
-    "targets_covered": 3,
+    "task_completion_rate": 0.004,
+    "runtime_seconds": 0.01,
+    "total_value": 2205.22,
+    "targets_covered": 4,
     "targets_total": 1000,
     "resource_utilization": {
       "avg_storage_usage": 0.006,
@@ -234,17 +234,17 @@
       "max_energy_usage": 0.125
     },
     "revisit_distribution": {
-      "0_times": 997,
-      "1_time": 1,
-      "2_times": 1,
-      "3+_times": 1
+      "0_times": 996,
+      "1_time": 2,
+      "2_times": 0,
+      "3+_times": 2
     },
     "completion_time_hours": 22.2,
     "detailed_breakdown": {
       "ultra_high_res_optical": {
         "observations": 30,
         "total_value": 0,
-        "avg_value": 74.38
+        "avg_value": 73.51
       }
     }
   }

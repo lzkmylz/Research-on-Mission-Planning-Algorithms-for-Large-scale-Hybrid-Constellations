@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Debug Test</title>
+</head>
+<body>
+  <div id="app">{{ message }}</div>
+  <div id="logs"></div>
+
+  <script type="module">
+    const logs = [];
+    function log(msg) {
+      logs.push(msg);
+      document.getElementById('logs').innerHTML += '<p>' + msg + '</p>';
+      console.log(msg);
+    }
+
+    log('Page loaded');
+    log('Checking Vue...');
+
+    try {
+      const { createApp } = await import('/node_modules/.vite/deps/vue.js');
+      log('Vue imported successfully');
+
+      const app = createApp({
+        data() {
+          return { message: 'Hello Vue!' }
+        }
+      });
+      log('App created');
+
+      app.mount('#app');
+      log('App mounted');
+
+      setTimeout(() => {
+        const appEl = document.getElementById('app');
+        log('App element content: ' + appEl.innerHTML);
+      }, 1000);
+
+    } catch (e) {
+      log('ERROR: ' + e.message);
+      log('Stack: ' + e.stack);
+    }
+  </script>
+</body>
+</html>

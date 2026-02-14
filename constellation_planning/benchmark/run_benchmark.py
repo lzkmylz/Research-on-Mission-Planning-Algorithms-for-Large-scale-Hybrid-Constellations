@@ -20,6 +20,7 @@ from constellation_planning.benchmark import ground_station_generator
 from constellation_planning.benchmark.evaluation.metrics_calculator import MetricsCalculator
 from constellation_planning.benchmark.evaluation.algorithm_comparator import AlgorithmComparator
 from constellation_planning.benchmark.evaluation.visualizer import Visualizer
+from constellation_planning.benchmark.result_enhancer import ResultEnhancer, load_ground_stations
 
 # 导入 STK 接口 (Mock)
 from constellation_planning.stk.mock_connector import MockSTKConnector
@@ -61,6 +62,14 @@ class BenchmarkRunner:
         
         # 评估计算器
         self.metrics_calc = MetricsCalculator()
+
+        # 加载地面站数据用于结果增强
+        self.ground_stations = load_ground_stations(str(self.base_dir))
+
+        # 结果增强器
+        self.result_enhancer = ResultEnhancer(
+            ground_stations=self.ground_stations
+        )
         
     def load_scenario_data(self, scenario_name: str) -> tuple:
         """加载场景数据"""
@@ -196,23 +205,24 @@ class BenchmarkRunner:
         return observations
 
     def run_algorithm(
-        self, 
-        algo_name: str, 
-        algo_class: Any, 
-        observations: List[BenchObservation], 
-        satellites: List[Dict], 
+        self,
+        algo_name: str,
+        algo_class: Any,
+        observations: List[BenchObservation],
+        satellites: List[Dict],
         targets: List[Dict],
-        scenario_name: str
+        scenario_name: str,
+        time_window: Optional[Dict[str, str]] = None
     ):
         """运行单个算法"""
         print(f"  > 运行算法: {algo_name}")
-        
+
         # 配置算法
         config = AlgorithmConfig(
             max_iterations=50, # 演示用，设小一点
             random_seed=42
         )
-        
+
         # 对于需要特定参数的算法进行处理
         try:
             if algo_name == "GeneticAlgorithm":
@@ -223,7 +233,7 @@ class BenchmarkRunner:
                 algorithm = algo_class(config)
         except Exception:
              algorithm = algo_class(config)
-        
+
         start_time = time.time()
         try:
             solution = algorithm.solve(observations, satellites)
@@ -232,18 +242,19 @@ class BenchmarkRunner:
             traceback.print_exc()
             # 生成一个空解作为 fallback
             solution = Solution()
-        
+
         runtime = time.time() - start_time
-        
+
         # 转换解为 benchmark 结果格式
         result = self._format_result(
-            solution, 
-            runtime, 
-            algo_name, 
+            solution,
+            runtime,
+            algo_name,
             scenario_name,
-            observations, 
+            observations,
             satellites,
-            targets
+            targets,
+            time_window
         )
         
         # 保存结果
@@ -254,21 +265,22 @@ class BenchmarkRunner:
         return result
 
     def _format_result(
-        self, 
-        solution: Solution, 
+        self,
+        solution: Solution,
         runtime: float,
         algo_name: str,
         scenario_name: str,
         observations: List[BenchObservation],
         satellites: List[Dict],
-        targets: List[Dict]
+        targets: List[Dict],
+        time_window: Optional[Dict[str, str]] = None
     ) -> Dict[str, Any]:
-        """格式化结果"""
-        
-        # 构建 observations 详情列表
+        """格式化结果（增强版）"""
+
+        # 构建基础 observations 详情列表
         obs_details = []
         obs_map = {o.id: o for o in observations}
-        
+
         for obs_id, sat_id in solution.assignments.items():
             if obs_id in obs_map:
                 original_obs = obs_map[obs_id]
@@ -279,14 +291,16 @@ class BenchmarkRunner:
                     "duration": original_obs.duration,
                     "elevation_deg": random.uniform(20, 80) # Mock值
                 })
-        
-        # 构建结果字典
-        result_data = {
+
+        # 构建基础结果字典
+        base_result = {
             "metadata": {
                 "algorithm": algo_name,
                 "scenario": scenario_name,
                 "timestamp": datetime.now().isoformat(),
-                "start_time": "2024-06-01T00:00:00Z"
+                "start_time": time_window.get("start", "2024-06-01T00:00:00Z") if time_window else "2024-06-01T00:00:00Z",
+                "end_time": time_window.get("end", "2024-06-02T00:00:00Z") if time_window else "2024-06-02T00:00:00Z",
+                "version": "2.0"
             },
             "execution": {
                 "runtime_seconds": round(runtime, 2),
@@ -294,14 +308,24 @@ class BenchmarkRunner:
             },
             "observations": obs_details
         }
-        
-        # 计算指标
+
+        # 计算基础指标
         metrics = self.metrics_calc.calculate_all_metrics(
-            result_data, targets, satellites
+            base_result, targets, satellites
         )
-        result_data["metrics"] = metrics
-        
-        return result_data
+        base_result["metrics"] = metrics
+
+        # 使用结果增强器生成完整结果
+        enhanced_result = self.result_enhancer.enhance_result(
+            base_result=base_result,
+            observations=observations,
+            satellites=satellites,
+            targets=targets,
+            scenario_time_window=time_window
+        )
+
+        # 转换为字典格式
+        return enhanced_result.to_dict()
 
     def _save_result(self, result: Dict, path: Path):
         """保存结果文件"""
@@ -333,12 +357,13 @@ class BenchmarkRunner:
             scenario_results = []
             for algo_name, algo_class in algorithms:
                 res = self.run_algorithm(
-                    algo_name, 
-                    algo_class, 
-                    observations, 
-                    sat_data, 
+                    algo_name,
+                    algo_class,
+                    observations,
+                    sat_data,
                     target_data,
-                    scenario
+                    scenario,
+                    time_window
                 )
                 scenario_results.append(res)
             

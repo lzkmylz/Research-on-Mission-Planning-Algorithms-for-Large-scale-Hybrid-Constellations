@@ -15,6 +15,8 @@
 - 📈 **优先级感知**：算法自动优化最大化任务总优先级收益（Total Priority Score）
 - 🧬 **经典算法**：禁忌搜索、模拟退火、遗传算法、蚁群算法
 - ⚡ **跨平台开发**：Mac 上使用 Mock 开发，Windows 上对接 STK 10
+- 🌐 **Web可视化界面**：基于 FastAPI + Vue 3 + CesiumJS 的三维可视化平台
+- 📊 **增强结果数据**：完整的数传计划、上注计划、资源时间线、约束检查详情
 
 ## 📦 安装
 
@@ -148,11 +150,53 @@ open benchmark_dataset/evaluation/test_scenario_radar.png
 
 详细文档: [benchmark_dataset/README.md](benchmark_dataset/README.md)
 
+## 🌐 Web可视化界面
+
+本项目包含基于 **FastAPI + Vue 3 + CesiumJS** 的 Web 可视化界面，提供三维地球显示、卫星轨道可视化、任务规划交互等功能。
+
+### Web界面特性
+
+- 🌍 **三维地球可视化**：CesiumJS 实时渲染卫星轨道、地面站、观测覆盖范围
+- 🛰️ **星座设计器**：Walker 星座参数编辑，实时预览轨道
+- 🎯 **目标管理**：点/区域/动态目标管理，支持批量导入
+- 🧬 **算法配置**：GA/Tabu/SA/ACO 算法参数配置与预设
+- ⏱️ **规划执行**：WebSocket 实时进度更新，任务队列管理
+- 📊 **结果可视化**：甘特图时间线、资源利用率图表、统计面板
+
+### Web界面快速开始
+
+```bash
+# 1. 启动后端 (需要 MySQL)
+cd web_interface/backend
+pip install -r requirements.txt
+export DB_HOST=localhost DB_USER=planning_user DB_PASSWORD=planning_password
+uvicorn main:app --reload --port 8000
+
+# 2. 启动前端
+cd web_interface/frontend
+npm install
+npm run dev
+
+# 3. 访问 http://localhost:5173
+```
+
+### Docker一键启动
+
+```bash
+cd web_interface
+docker-compose up -d
+# 访问 http://localhost
+```
+
+详细文档: [web_interface/README.md](web_interface/README.md) | [web_interface/QUICKSTART.md](web_interface/QUICKSTART.md)
+
 ## 📁 项目结构
 
 ```
 constellation_planning/
 ├── benchmark/       # 基准测试数据集与评估工具
+│   ├── run_benchmark.py    # 基准测试运行器
+│   └── result_enhancer.py  # 增强结果数据生成
 ├── config/          # 配置管理
 ├── models/          # 数据模型
 │   ├── satellite.py        # 卫星模型
@@ -162,7 +206,7 @@ constellation_planning/
 │   ├── ttc_station.py      # 测控数传站（多天线/上注能力）
 │   ├── uplink.py           # 上注/数传动作模型（含分段传输）
 │   └── ...                  # 目标、传感器、观测窗口等
-├── stk/             # STK 接口层（Mock + STK10 COM）
+├── stk/             # STK 接口层（Mock + STK10 COM + Orekit）
 ├── decomposition/   # 区域分解策略
 ├── constraints/     # 约束检查
 │   ├── transition.py       # 动作转换时间约束
@@ -176,6 +220,25 @@ constellation_planning/
 ├── objectives/      # 优化目标函数
 ├── evaluation/      # 性能评估与可视化
 └── utils/           # 工具函数
+
+web_interface/           # Web可视化界面（新增）
+├── backend/             # FastAPI后端
+│   ├── main.py          # 应用入口（97个API端点）
+│   ├── api/             # API路由（8个模块）
+│   ├── services/        # 业务逻辑服务（8个）
+│   ├── schemas/         # Pydantic模型（10个模块）
+│   └── database/        # 数据持久层
+│       ├── models.py    # SQLAlchemy ORM模型（14个表）
+│       └── repositories/# 数据仓库（8个）
+├── frontend/            # Vue 3前端
+│   ├── src/
+│   │   ├── components/  # 可视化组件（7个）
+│   │   ├── views/       # 页面视图（4个）
+│   │   ├── api/         # API客户端（8个）
+│   │   └── stores/      # Pinia状态管理（3个）
+│   └── package.json
+├── docker-compose.yml   # Docker一键部署
+└── README.md
 ```
 
 ## 🔧 支持的算法
@@ -189,6 +252,31 @@ constellation_planning/
 | 蚁群算法 | `AntColonyOptimization` | `num_ants`, `alpha`, `beta`, `rho` | 蚁群优化 |
 
 > **提示**: 所有基线算法（GA, TS, SA, ACO）均已内置优先级感知能力。如果观测任务包含 `priority` 或 `score` 属性，算法将自动以最大化**总分值**为目标进行规划，而非简单的任务计数。
+
+## 🛠️ 技术栈
+
+### 后端
+| 技术 | 用途 | 版本 |
+|------|------|------|
+| **FastAPI** | Web框架 | ^0.104.0 |
+| **SQLAlchemy 2.0** | ORM + 异步数据库 | ^2.0.0 |
+| **asyncmy** | MySQL异步驱动 | ^0.2.8 |
+| **Pydantic v2** | 数据验证 | ^2.5.0 |
+| **python-socketio** | WebSocket实时通信 | ^5.10.0 |
+
+### 前端
+| 技术 | 用途 | 版本 |
+|------|------|------|
+| **Vue 3** | 前端框架 | ^3.5.0 |
+| **CesiumJS** | 三维地球可视化 | ^1.129.0 |
+| **Element Plus** | UI组件库 | ^2.13.0 |
+| **ECharts** | 数据可视化图表 | ^5.6.0 |
+| **Pinia** | 状态管理 | ^2.3.0 |
+| **Vite** | 构建工具 | ^5.4.0 |
+
+### 数据库
+- **MySQL 8.0** - 主数据库存储（星座、目标、场景、规划任务、结果）
+- **14个核心表** - 覆盖卫星、目标、场景、算法配置、规划任务、观测记录、数传/上注计划等
 
 ### AWCSAT算法（推荐）
 
@@ -244,15 +332,72 @@ print(f"Best: {result.objective_value}")
 
 ## 🖥️ 开发说明
 
-- **Mac 开发**：使用 `MockSTKConnector` 进行算法开发和测试
-- **Windows 部署**：切换到 `STK10Connector` 对接真实 STK
+支持三种轨道计算后端，通过配置切换：
+
+| 后端 | 适用场景 | 平台 | 精度 |
+|------|----------|------|------|
+| `mock` | 快速开发、算法调试 | 跨平台 | 低（简化模型） |
+| `orekit` | 精确仿真、算法验证 | 跨平台 | 高（Orekit） |
+| `stk` | 最终部署、结果对标 | 仅 Windows | 高（STK 10） |
+
+### Web界面与核心框架集成
+
+Web界面（`web_interface/`）与核心规划框架（`constellation_planning/`）的关系：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Web可视化界面                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │  星座设计器   │  │  规划执行    │  │  结果可视化  │       │
+│  │  Vue3+Cesium │  │  WebSocket   │  │  甘特图+图表 │       │
+│  └──────────────┘  └──────────────┘  └──────────────┘       │
+│                        │                                      │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │            FastAPI REST API (97个端点)                 │   │
+│  │  /api/constellations  /api/planning  /api/results    │   │
+│  └──────────────────────────────────────────────────────┘   │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────────┐
+│               星座任务规划核心框架                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │  STK连接层   │  │  约束检查    │  │  调度器      │       │
+│  │  Mock/Orekit │  │  转换/资源   │  │  TTC/数传    │       │
+│  └──────────────┘  └──────────────┘  └──────────────┘       │
+│                        │                                      │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │              优化算法 (TS/SA/GA/ACO)                   │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Web界面通过 REST API 调用核心框架的功能，支持：
+- 创建和管理星座、目标、场景
+- 配置和运行规划算法
+- 实时查看规划进度（WebSocket）
+- 三维可视化展示结果
+
+### 使用 get_connector 工厂函数
 
 ```python
-from constellation_planning.stk import MockSTKConnector
+from constellation_planning.config import Settings
+from constellation_planning.stk import get_connector
 
-# Mac 开发
-with MockSTKConnector() as stk:
-    satellites = stk.create_walker_constellation(...)
+# 配置后端（可通过 YAML 文件配置）
+settings = Settings(orbit_backend="orekit")  # 或 "mock", "stk"
+
+# 自动获取对应的连接器
+with get_connector(settings) as conn:
+    satellites = conn.create_walker_constellation(
+        name="MyConstellation",
+        altitude_km=500,
+        inclination_deg=97.4,
+        num_planes=6,
+        sats_per_plane=10
+    )
+
+# Orekit 安装（需要 conda 环境）
+# conda install -c conda-forge orekit
 ```
 
 ## 📄 License

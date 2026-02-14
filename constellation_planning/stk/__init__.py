@@ -4,6 +4,7 @@
 from .interface import STKInterface
 from .mock_connector import MockSTKConnector
 from .walker import WalkerConstellationBuilder
+from .connector_factory import get_connector
 
 # Windows 平台才导入真实连接器
 import sys
@@ -14,4 +15,6 @@ __all__ = [
     "STKInterface",
     "MockSTKConnector",
     "WalkerConstellationBuilder",
+    "get_connector",
 ]
+

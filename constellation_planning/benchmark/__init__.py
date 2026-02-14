@@ -5,3 +5,16 @@
 """
 
 __version__ = "1.0.0"
+
+# 导出结果增强器
+from .result_enhancer import (
+    ResultEnhancer,
+    EnhancedResult,
+    EnhancedObservationRecord,
+    DownlinkPlanRecord,
+    UplinkPlanRecord,
+    PayloadTimelineRecord,
+    SatelliteResourceTimeline,
+    ConstraintCheckResult,
+    load_ground_stations,
+)
