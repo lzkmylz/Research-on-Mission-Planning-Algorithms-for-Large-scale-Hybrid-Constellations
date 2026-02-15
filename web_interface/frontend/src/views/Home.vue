@@ -1,154 +1,89 @@
 <template>
   <div class="home">
-    <div class="hero">
-      <h1>星座任务规划系统</h1>
-      <p class="subtitle">大规模成像星座任务规划与调度优化平台</p>
-      <div class="actions">
-        <el-button type="primary" size="large" @click="$router.push('/constellation')">
-          <el-icon><Dish /></el-icon>
-          设计星座
-        </el-button>
-        <el-button type="success" size="large" @click="$router.push('/planning')">
-          <el-icon><Timer /></el-icon>
-          开始规划
-        </el-button>
-        <el-button size="large" @click="$router.push('/results')">
-          <el-icon><DataAnalysis /></el-icon>
-          查看结果
-        </el-button>
-      </div>
+    <!-- 第一行：页面标题 -->
+    <div class="header-section">
+      <h1 class="main-title">星座任务规划系统</h1>
     </div>
 
-    <el-row :gutter="20" class="features">
-      <el-col :span="6">
-        <el-card class="feature-card">
-          <el-icon class="feature-icon"><Dish /></el-icon>
-          <h3>星座设计</h3>
-          <p>支持Walker、Flower等多种星座构型设计，可视化编辑卫星参数</p>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="feature-card">
-          <el-icon class="feature-icon"><Location /></el-icon>
-          <h3>目标管理</h3>
-          <p>点目标、区域目标、移动目标管理，支持GeoJSON导入导出</p>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="feature-card">
-          <el-icon class="feature-icon"><Cpu /></el-icon>
-          <h3>智能规划</h3>
-          <p>遗传算法、禁忌搜索、模拟退火、蚁群优化等多种算法</p>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card class="feature-card">
-          <el-icon class="feature-icon"><View /></el-icon>
-          <h3>三维可视化</h3>
-          <p>基于Cesium的三维地球可视化，实时展示卫星轨道和观测计划</p>
-        </el-card>
+    <!-- 第二行：功能导航 -->
+    <el-row :gutter="20" class="nav-section">
+      <el-col :span="6" v-for="item in navItems" :key="item.path">
+        <div class="nav-card" @click="$router.push(item.path)">
+          <el-icon :size="48" class="nav-icon">
+            <component :is="item.icon" />
+          </el-icon>
+          <h3 class="nav-title">{{ item.title }}</h3>
+          <p class="nav-desc">{{ item.desc }}</p>
+        </div>
       </el-col>
     </el-row>
 
-    <el-card class="stats-card">
-      <template #header>
-        <span>系统状态</span>
-      </template>
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <div class="stat-item">
-            <div class="stat-value">{{ stats.constellations }}</div>
-            <div class="stat-label">星座数量</div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-item">
-            <div class="stat-value">{{ stats.satellites }}</div>
-            <div class="stat-label">卫星数量</div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-item">
-            <div class="stat-value">{{ stats.targets }}</div>
-            <div class="stat-label">目标数量</div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-item">
-            <div class="stat-value">{{ stats.jobs }}</div>
-            <div class="stat-label">规划任务</div>
-          </div>
-        </el-col>
-      </el-row>
-    </el-card>
-
-    <el-card class="recent-card">
-      <template #header>
-        <span>最近任务</span>
-      </template>
-      <el-table :data="recentJobs" v-loading="loading">
+    <!-- 第三行：规划任务列表 -->
+    <div class="tasks-section">
+      <div class="section-header">
+        <h2>规划任务</h2>
+        <el-button type="primary" @click="refreshTasks" :loading="loading">
+          <el-icon><Refresh /></el-icon>刷新
+        </el-button>
+      </div>
+      <el-table :data="tasks" stripe v-loading="loading" class="tasks-table">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="scenario_name" label="场景" />
-        <el-table-column prop="algorithm" label="算法" />
+        <el-table-column prop="scenario_name" label="任务名称" />
+        <el-table-column prop="algorithm" label="算法" width="120" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="创建时间">
+        <el-table-column prop="created_at" label="创建时间" width="180">
           <template #default="{ row }">
             {{ formatDatetime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="viewResult(row)">查看</el-button>
+            <el-button size="small" @click="viewTask(row)">查看</el-button>
+            <el-button size="small" type="success" @click="viewResults(row)">结果</el-button>
+            <el-button size="small" type="primary" @click="play3D(row)">
+              <el-icon><VideoPlay /></el-icon>播放
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Dish, Timer, DataAnalysis, Location, Cpu, View } from '@element-plus/icons-vue'
+import { Dish, MapLocation, SetUp, VideoPlay, Refresh } from '@element-plus/icons-vue'
 import { formatDatetime } from '@/utils/formatters'
 import { planningApi } from '@/api/planning'
 
 const router = useRouter()
 const loading = ref(false)
-const stats = ref({
-  constellations: 0,
-  satellites: 0,
-  targets: 0,
-  jobs: 0
-})
-const recentJobs = ref([])
+const tasks = ref([])
+
+const navItems = [
+  { title: '星座设计', path: '/constellation', icon: 'Dish', desc: '设计Walker星座配置' },
+  { title: '场景设计', path: '/scenario', icon: 'MapLocation', desc: '创建观测场景和目标' },
+  { title: '算法设计', path: '/algorithm', icon: 'SetUp', desc: '配置规划算法参数' },
+  { title: '任务规划计算', path: '/planning', icon: 'VideoPlay', desc: '执行任务规划计算' }
+]
 
 onMounted(async () => {
-  await loadStats()
-  await loadRecentJobs()
+  await refreshTasks()
 })
 
-async function loadStats() {
-  // TODO: Load from API
-  stats.value = {
-    constellations: 3,
-    satellites: 200,
-    targets: 1000,
-    jobs: 12
-  }
-}
-
-async function loadRecentJobs() {
+async function refreshTasks() {
   loading.value = true
   try {
-    const jobs = await planningApi.getAllJobs({ limit: 5 })
-    recentJobs.value = jobs
+    const jobs = await planningApi.getAllJobs({ limit: 20 })
+    tasks.value = jobs
   } catch (error) {
-    console.error('Failed to load jobs:', error)
+    console.error('Failed to load tasks:', error)
+    tasks.value = []
   } finally {
     loading.value = false
   }
@@ -164,8 +99,17 @@ function getStatusType(status) {
   return types[status] || 'info'
 }
 
-function viewResult(job) {
-  router.push(`/results?job_id=${job.id}`)
+function viewTask(row) {
+  router.push(`/results?job_id=${row.id}`)
+}
+
+function viewResults(row) {
+  router.push(`/results?job_id=${row.id}&tab=results`)
+}
+
+function play3D(row) {
+  // 打开三维可视化播放页面
+  window.open(`/visualization?job_id=${row.id}`, '_blank')
 }
 </script>
 
@@ -176,92 +120,84 @@ function viewResult(job) {
   margin: 0 auto;
 }
 
-.hero {
+/* 第一行：标题 */
+.header-section {
   text-align: center;
-  padding: 60px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
-  color: white;
   margin-bottom: 40px;
 }
 
-.hero h1 {
-  font-size: 48px;
-  margin-bottom: 16px;
-  font-weight: 600;
-}
-
-.subtitle {
-  font-size: 20px;
-  opacity: 0.9;
-  margin-bottom: 32px;
-}
-
-.actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-}
-
-.actions .el-button {
-  font-size: 16px;
-  padding: 16px 32px;
-}
-
-.features {
-  margin-bottom: 40px;
-}
-
-.feature-card {
-  text-align: center;
-  padding: 30px 20px;
-  height: 100%;
-  transition: transform 0.3s;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-}
-
-.feature-icon {
-  font-size: 48px;
-  color: #409EFF;
-  margin-bottom: 16px;
-}
-
-.feature-card h3 {
-  font-size: 18px;
-  margin-bottom: 12px;
-  color: #303133;
-}
-
-.feature-card p {
-  color: #606266;
-  line-height: 1.6;
-}
-
-.stats-card {
-  margin-bottom: 40px;
-}
-
-.stat-item {
-  text-align: center;
-  padding: 20px;
-}
-
-.stat-value {
+.main-title {
   font-size: 36px;
-  font-weight: bold;
-  color: #409EFF;
-  margin-bottom: 8px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0;
 }
 
-.stat-label {
-  font-size: 14px;
-  color: #606266;
-}
-
-.recent-card {
+/* 第二行：功能导航 */
+.nav-section {
   margin-bottom: 40px;
+}
+
+.nav-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ebeef5;
+  height: 100%;
+}
+
+.nav-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.nav-icon {
+  color: #409EFF;
+  margin-bottom: 16px;
+}
+
+.nav-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0 0 8px 0;
+}
+
+.nav-desc {
+  font-size: 14px;
+  color: #909399;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 第三行：任务列表 */
+.tasks-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ebeef5;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #303133;
+  margin: 0;
+}
+
+.tasks-table {
+  width: 100%;
 }
 </style>

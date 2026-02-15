@@ -13,6 +13,7 @@ from .scenario_repository import ScenarioRepository
 from .algorithm_repository import AlgorithmRepository
 from .task_repository import TaskRepository
 from .result_repository import ResultRepository
+from .satellite_repository import SatelliteRepository
 
 __all__ = [
     "BaseRepository",
@@ -23,4 +24,5 @@ __all__ = [
     "AlgorithmRepository",
     "TaskRepository",
     "ResultRepository",
+    "SatelliteRepository",
 ]

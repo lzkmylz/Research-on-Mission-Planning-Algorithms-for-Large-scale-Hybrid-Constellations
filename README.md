@@ -190,6 +190,39 @@ docker-compose up -d
 
 详细文档: [web_interface/README.md](web_interface/README.md) | [web_interface/QUICKSTART.md](web_interface/QUICKSTART.md)
 
+### 快速启动脚本（推荐）
+
+项目根目录提供了一键启动/停止脚本，无需手动进入各目录：
+
+```bash
+# 1. 首次使用：安装依赖
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cd web_interface/frontend && npm install && cd ../..
+
+# 2. 启动前后端服务
+./start_servers.sh
+
+# 3. 查看服务状态
+./status_servers.sh
+
+# 4. 停止服务
+./stop_servers.sh
+```
+
+**脚本说明：**
+
+| 脚本 | 用途 | 示例 |
+|------|------|------|
+| `./start_servers.sh` | 同时启动前后端服务 | 启动后端(8000) + 前端(5173) |
+| `./stop_servers.sh` | 停止所有服务 | 关闭前后端进程 |
+| `./status_servers.sh` | 查看服务运行状态 | 显示PID和访问地址 |
+
+**日志文件：**
+- 后端日志：`logs/backend.log`
+- 前端日志：`logs/frontend.log`
+
 ## 📁 项目结构
 
 ```

@@ -420,6 +420,87 @@ class ConstraintViolation(Base):
     )
 
 
+# ========== 卫星管理模型 ==========
+
+class OrbitTypeEnum(PyEnum):
+    """轨道类型枚举"""
+    LEO = "LEO"
+    MEO = "MEO"
+    GEO = "GEO"
+    SSO = "SSO"
+    GTO = "GTO"
+
+
+class StorageTypeEnum(PyEnum):
+    """存储类型枚举"""
+    SSD = "ssd"
+    MLC = "mlc"
+    SLC = "slc"
+
+
+class ModulationEnum(PyEnum):
+    """调制方式枚举"""
+    QPSK = "qpsk"
+    PSK8 = "8psk"
+    QAM16 = "16qam"
+    BPSK = "bpsk"
+
+
+class Satellite(Base):
+    """卫星表 - 完整的卫星管理模型"""
+    __tablename__ = "satellites"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+
+    # 基本信息
+    name = Column(String(100), nullable=False, index=True)
+    norad_id = Column(String(20), nullable=True, index=True)
+    satellite_code = Column(String(50), nullable=True)
+    constellation_name = Column(String(100), nullable=True, index=True)
+
+    # 轨道六根数 (NASA格式)
+    semi_major_axis_km = Column(Float, nullable=False)
+    eccentricity = Column(Float, nullable=False, default=0.0)
+    inclination_deg = Column(Float, nullable=False)
+    raan_deg = Column(Float, nullable=False, default=0.0)  # 升交点赤经 Ω
+    arg_perigee_deg = Column(Float, nullable=False, default=0.0)  # 近地点幅角 ω
+    mean_anomaly_deg = Column(Float, nullable=False, default=0.0)  # 平近点角 M
+    epoch = Column(DateTime, nullable=True)  # 参考历元
+    orbit_type = Column(Enum(OrbitTypeEnum), nullable=False, default=OrbitTypeEnum.LEO)
+
+    # 载荷配置 (JSON数组)
+    payloads = Column(JSON, default=list)
+
+    # 能源配置
+    solar_panel_power_w = Column(Float, nullable=True)
+    battery_capacity_ah = Column(Float, nullable=True)
+    battery_voltage_v = Column(Float, nullable=True)
+    avg_power_consumption_w = Column(Float, nullable=True)
+    imaging_power_w = Column(Float, nullable=True)
+    downlink_power_w = Column(Float, nullable=True)
+
+    # 存储配置
+    storage_capacity_gb = Column(Float, nullable=True)
+    storage_type = Column(Enum(StorageTypeEnum), nullable=True)
+    storage_write_rate_mbps = Column(Float, nullable=True)
+    storage_read_rate_mbps = Column(Float, nullable=True)
+    downlink_rate_mbps = Column(Float, nullable=True)
+    modulation = Column(Enum(ModulationEnum), nullable=True)
+    antenna_gain_dbi = Column(Float, nullable=True)
+
+    # 时间戳
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 索引
+    __table_args__ = (
+        Index("idx_satellite_name", "name"),
+        Index("idx_satellite_norad", "norad_id"),
+        Index("idx_satellite_constellation", "constellation_name"),
+        Index("idx_satellite_orbit_type", "orbit_type"),
+    )
+
+
 # ========== 资源时间线模型（可选，用于详细分析） ==========
 
 class ResourceTimeline(Base):

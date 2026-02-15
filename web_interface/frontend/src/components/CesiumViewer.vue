@@ -48,12 +48,14 @@ const cesiumContainer = ref(null)
 let viewer = null
 
 // Initialize Cesium viewer
-onMounted(() => {
+onMounted(async () => {
   // Set Cesium ion token (replace with your own)
   Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1ZDAwZC1iZTEyLTRkNDUtODVlYi0zYTI2ODI2N2FjMDUiLCJpZCI6NTYwODUsImlhdCI6MTY5NjA0MjE3OH0.MmK0RXva9E8Z7aW3F9X7v3z9z9z9z9z9z9z9z9z9z9z'
 
+  const terrainProvider = await Cesium.createWorldTerrainAsync()
+
   viewer = new Cesium.Viewer(cesiumContainer.value, {
-    terrainProvider: Cesium.createWorldTerrain(),
+    terrainProvider: terrainProvider,
     imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }),
     baseLayerPicker: true,
     geocoder: true,

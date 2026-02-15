@@ -13,18 +13,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from database.connection import init_db
-from api import constellations, ground_stations, targets, scenarios, algorithms, planning, results, visualization
+from api import constellations, ground_stations, targets, scenarios, algorithms, planning, results, visualization, satellites
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
-    # 启动时初始化数据库
-    await init_db()
-    print("✓ 数据库初始化完成")
+    # 测试环境下跳过数据库初始化（由测试fixture处理）
+    if os.getenv("TESTING") != "true":
+        # 启动时初始化数据库
+        await init_db()
+        print("✓ 数据库初始化完成")
     yield
     # 关闭时清理资源
-    print("✓ 应用关闭")
+    if os.getenv("TESTING") != "true":
+        print("✓ 应用关闭")
 
 
 # 创建FastAPI应用
@@ -93,6 +96,12 @@ app.include_router(
     tags=["可视化数据"]
 )
 
+app.include_router(
+    satellites.router,
+    prefix="/api/satellites",
+    tags=["卫星管理"]
+)
+
 # 静态文件服务（用于前端构建输出）
 frontend_dir = os.path.join(os.path.dirname(__file__), "../frontend/dist")
 if os.path.exists(frontend_dir):
@@ -120,5 +129,6 @@ async def api_info():
             "planning": "/api/planning",
             "results": "/api/results",
             "visualization": "/api/visualization",
+            "satellites": "/api/satellites",
         }
     }
