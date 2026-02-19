@@ -21,6 +21,9 @@ echo ""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# 创建日志目录（如果不存在）
+mkdir -p logs
+
 # 检查后端依赖
 echo -e "${YELLOW}[1/4] 检查后端正端依赖...${NC}"
 if [ ! -d "venv" ]; then

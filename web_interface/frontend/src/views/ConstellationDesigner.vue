@@ -270,20 +270,32 @@
                         </el-tag>
                       </template>
                     </el-table-column>
-                    <el-table-column prop="resolution_m" label="分辨率" width="80">
+                    <!-- 成像载荷参数 -->
+                    <el-table-column v-if="hasImagingPayload" prop="resolution_m" label="分辨率" width="80">
                       <template #default="{ row }">
-                        {{ row.resolution_m }}m
+                        {{ row.resolution_m ? row.resolution_m + 'm' : '-' }}
                       </template>
                     </el-table-column>
-                    <el-table-column prop="swath_km" label="幅宽" width="70">
+                    <el-table-column v-if="hasImagingPayload" prop="swath_km" label="幅宽" width="70">
                       <template #default="{ row }">
-                        {{ row.swath_km }}km
+                        {{ row.swath_km ? row.swath_km + 'km' : '-' }}
                       </template>
                     </el-table-column>
-                    <el-table-column label="操作" width="120" fixed="right">
+                    <!-- 通信载荷参数 -->
+                    <el-table-column v-if="hasCommunicationPayload" prop="freq_ghz" label="频段" width="90">
+                      <template #default="{ row }">
+                        {{ row.freq_ghz ? row.freq_ghz + 'GHz' : '-' }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column v-if="hasCommunicationPayload" prop="data_rate_mbps" label="码率" width="90">
+                      <template #default="{ row }">
+                        {{ row.data_rate_mbps ? row.data_rate_mbps + 'Mbps' : '-' }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="150" fixed="right">
                       <template #default="{ $index }">
-                        <el-button size="small" text @click="editPayload($index)">编辑</el-button>
-                        <el-button size="small" text type="danger" @click="deletePayload($index)">删除</el-button>
+                        <el-button size="small" @click="editPayload($index)">编辑</el-button>
+                        <el-button size="small" type="danger" @click="deletePayload($index)">删除</el-button>
                       </template>
                     </el-table-column>
                   </el-table>
@@ -455,7 +467,7 @@
           <el-dialog
             v-model="payloadDialogVisible"
             :title="isEditingPayload ? '编辑载荷' : '添加载荷'"
-            width="500px"
+            width="900px"
             :close-on-click-modal="false"
           >
             <el-form :model="payloadForm" label-width="120px">
@@ -472,7 +484,9 @@
                   <el-option label="科学仪器" value="scientific" />
                 </el-select>
               </el-form-item>
-              <el-row :gutter="20">
+
+              <!-- 成像载荷参数：分辨率、幅宽 -->
+              <el-row v-if="isImagingPayload" :gutter="20">
                 <el-col :span="12">
                   <el-form-item label="分辨率 (m)">
                     <el-input-number
@@ -480,6 +494,9 @@
                       :min="0.1"
                       :max="1000"
                       :precision="2"
+                      :step="0.1"
+                      :controls="true"
+                      controls-position="right"
                       style="width: 100%"
                     />
                   </el-form-item>
@@ -491,17 +508,60 @@
                       :min="1"
                       :max="2000"
                       :precision="1"
+                      :step="0.5"
+                      :controls="true"
+                      controls-position="right"
                       style="width: 100%"
                     />
                   </el-form-item>
                 </el-col>
               </el-row>
+
+              <!-- 通信载荷参数：频段、码速率、调制方式 -->
+              <template v-if="isCommunicationPayload">
+                <el-row :gutter="20">
+                  <el-col :span="12">
+                    <el-form-item label="频段 (GHz)">
+                      <el-input-number
+                        v-model="payloadForm.freq_ghz"
+                        :min="0.1"
+                        :max="100"
+                        :precision="2"
+                        :step="0.1"
+                        controls-position="right"
+                        style="width: 100%"
+                      />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
+                    <el-form-item label="码速率 (Mbps)">
+                      <el-input-number
+                        v-model="payloadForm.data_rate_mbps"
+                        :min="1"
+                        :max="10000"
+                        :precision="1"
+                        :step="10"
+                        controls-position="right"
+                        style="width: 100%"
+                      />
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+                <el-form-item label="调制方式">
+                  <el-select v-model="payloadForm.modulation" style="width: 100%">
+                    <el-option label="QPSK" value="qpsk" />
+                    <el-option label="8PSK" value="8psk" />
+                    <el-option label="16QAM" value="16qam" />
+                    <el-option label="BPSK" value="bpsk" />
+                  </el-select>
+                </el-form-item>
+              </template>
+
               <el-form-item label="工作模式">
                 <el-checkbox-group v-model="payloadForm.operation_modes">
-                  <el-checkbox label="strip">推扫</el-checkbox>
-                  <el-checkbox label="stare">凝视</el-checkbox>
-                  <el-checkbox label="scan">扫描</el-checkbox>
-                  <el-checkbox label="video">视频</el-checkbox>
+                  <el-checkbox v-for="mode in availableOperationModes" :key="mode.value" :label="mode.value">
+                    {{ mode.label }}
+                  </el-checkbox>
                 </el-checkbox-group>
               </el-form-item>
               <el-form-item label="载荷质量 (kg)">
@@ -566,23 +626,54 @@
                   <el-option label="SAR雷达" value="sar" />
                   <el-option label="红外相机" value="infrared" />
                   <el-option label="多光谱相机" value="multispectral" />
+                  <el-option label="通信载荷" value="communication" />
+                  <el-option label="科学仪器" value="scientific" />
                 </el-select>
               </el-form-item>
-              <el-form-item label="分辨率(m)">
-                <el-input-number v-model="payloadForm.resolution" :min="0.1" :max="100" :precision="1" style="width: 100%" />
-              </el-form-item>
-              <el-form-item label="幅宽(km)">
-                <el-input-number v-model="payloadForm.swath" :min="1" :max="1000" style="width: 100%" />
-              </el-form-item>
+              <!-- 成像载荷参数 -->
+              <template v-if="isImagingPayload">
+                <el-form-item label="分辨率(m)">
+                  <el-input-number v-model="payloadForm.resolution_m" :min="0.1" :max="100" :precision="1" style="width: 100%" />
+                </el-form-item>
+                <el-form-item label="幅宽(km)">
+                  <el-input-number v-model="payloadForm.swath_km" :min="1" :max="1000" style="width: 100%" />
+                </el-form-item>
+              </template>
+              <!-- 通信载荷参数 -->
+              <template v-if="isCommunicationPayload">
+                <el-form-item label="频段(GHz)">
+                  <el-input-number v-model="payloadForm.freq_ghz" :min="0.1" :max="100" :precision="2" style="width: 100%" />
+                </el-form-item>
+                <el-form-item label="码速率(Mbps)">
+                  <el-input-number v-model="payloadForm.data_rate_mbps" :min="1" :max="10000" :precision="1" style="width: 100%" />
+                </el-form-item>
+                <el-form-item label="调制方式">
+                  <el-select v-model="payloadForm.modulation" style="width: 100%">
+                    <el-option label="QPSK" value="qpsk" />
+                    <el-option label="8PSK" value="8psk" />
+                    <el-option label="16QAM" value="16qam" />
+                    <el-option label="BPSK" value="bpsk" />
+                  </el-select>
+                </el-form-item>
+              </template>
               <el-form-item label="工作模式">
-                <el-checkbox-group v-model="payloadForm.modes">
-                  <el-checkbox label="strip">推扫</el-checkbox>
-                  <el-checkbox label="stare">凝视</el-checkbox>
-                  <el-checkbox label="scan">扫描</el-checkbox>
+                <el-checkbox-group v-model="payloadForm.operation_modes">
+                  <el-checkbox v-for="mode in availableOperationModes" :key="mode.value" :label="mode.value">
+                    {{ mode.label }}
+                  </el-checkbox>
                 </el-checkbox-group>
               </el-form-item>
+              <el-form-item label="载荷质量 (kg)">
+                <el-input-number
+                  v-model="payloadForm.mass_kg"
+                  :min="0"
+                  :max="10000"
+                  :precision="2"
+                  style="width: 100%"
+                />
+              </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="savePayload">
+                <el-button type="primary" @click="savePayloadToSatellite">
                   <el-icon><Check /></el-icon>保存载荷
                 </el-button>
               </el-form-item>
@@ -610,7 +701,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, Delete, Dish, Connection, Box, HomeFilled, Check, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -627,6 +718,41 @@ const activeMenu = ref('walker')
 const showOrbits = ref(true)
 const showCoverage = ref(false)
 const showLabels = ref(true)
+
+// 载荷类型与工作模式的配置
+const PAYLOAD_MODE_CONFIG = {
+  optical: [
+    { value: 'strip', label: '推扫' },
+    { value: 'stare', label: '凝视' },
+    { value: 'scan', label: '扫描' },
+    { value: 'video', label: '视频' }
+  ],
+  sar: [
+    { value: 'stripmap', label: '条带' },
+    { value: 'spotlight', label: '聚束' },
+    { value: 'scanSAR', label: '扫描' }
+  ],
+  infrared: [
+    { value: 'strip', label: '推扫' },
+    { value: 'stare', label: '凝视' },
+    { value: 'scan', label: '扫描' },
+    { value: 'video', label: '视频' }
+  ],
+  multispectral: [
+    { value: 'strip', label: '推扫' },
+    { value: 'stare', label: '凝视' },
+    { value: 'scan', label: '扫描' },
+    { value: 'video', label: '视频' }
+  ],
+  communication: [
+    { value: 'relay', label: '中继' },
+    { value: 'broadcast', label: '广播' }
+  ],
+  scientific: [
+    { value: 'observation', label: '观测' },
+    { value: 'experiment', label: '实验' }
+  ]
+}
 
 const constellations = ref([])
 const selectedConstellation = ref(null)
@@ -653,10 +779,56 @@ const editingPayloadIndex = ref(-1)
 const payloadForm = ref({
   name: '',
   type: 'optical',
-  resolution_m: 2.0,
-  swath_km: 50,
+  resolution_m: 0.5,
+  swath_km: 10,
   operation_modes: ['strip'],
   mass_kg: 100
+})
+
+// 成像载荷类型
+const IMAGING_PAYLOAD_TYPES = ['optical', 'sar', 'infrared', 'multispectral']
+// 通信载荷类型
+const COMMUNICATION_PAYLOAD_TYPES = ['communication']
+
+// 根据载荷类型计算可用的工作模式
+const availableOperationModes = computed(() => {
+  const type = payloadForm.value?.type
+  return PAYLOAD_MODE_CONFIG[type] || []
+})
+
+// 判断当前是否为成像载荷
+const isImagingPayload = computed(() => {
+  return IMAGING_PAYLOAD_TYPES.includes(payloadForm.value?.type)
+})
+
+// 判断当前是否为通信载荷
+const isCommunicationPayload = computed(() => {
+  return COMMUNICATION_PAYLOAD_TYPES.includes(payloadForm.value?.type)
+})
+
+// 判断载荷列表中是否有成像载荷
+const hasImagingPayload = computed(() => {
+  return editForm.value?.payloads?.some(p => IMAGING_PAYLOAD_TYPES.includes(p.type))
+})
+
+// 判断载荷列表中是否有通信载荷
+const hasCommunicationPayload = computed(() => {
+  return editForm.value?.payloads?.some(p => COMMUNICATION_PAYLOAD_TYPES.includes(p.type))
+})
+
+// 监听载荷类型变化，自动重置表单字段
+watch(() => payloadForm.value?.type, (newType, oldType) => {
+  if (newType !== oldType && payloadForm.value && oldType !== undefined) {
+    // 获取新类型的默认表单数据
+    const defaults = getDefaultPayloadForm(newType)
+    // 保留名称和质量，重置其他字段
+    payloadForm.value = {
+      ...defaults,
+      name: payloadForm.value.name || defaults.name,
+      mass_kg: payloadForm.value.mass_kg || defaults.mass_kg
+    }
+    console.log(`载荷类型切换为 ${newType}，表单已重置`, payloadForm.value)
+  }
 })
 
 const walkerForm = ref({
@@ -798,32 +970,85 @@ async function deleteConstellation(row) {
 function showAddPayloadDialog() {
   isEditingPayload.value = false
   editingPayloadIndex.value = -1
-  payloadForm.value = {
-    name: '',
-    type: 'optical',
-    resolution_m: 2.0,
-    swath_km: 50,
-    operation_modes: ['strip'],
-    mass_kg: 100
-  }
+  // 根据载荷类型设置默认值
+  payloadForm.value = Object.assign({}, getDefaultPayloadForm('optical'))
+  console.log('showAddPayloadDialog - payloadForm:', JSON.parse(JSON.stringify(payloadForm.value)))
   payloadDialogVisible.value = true
 }
 
+// 根据载荷类型获取默认表单数据
+function getDefaultPayloadForm(type) {
+  const base = {
+    name: '',
+    type: type,
+    operation_modes: [],
+    mass_kg: 100
+  }
+
+  if (IMAGING_PAYLOAD_TYPES.includes(type)) {
+    return {
+      ...base,
+      resolution_m: 0.5,
+      swath_km: 10,
+      operation_modes: ['strip']
+    }
+  }
+
+  if (COMMUNICATION_PAYLOAD_TYPES.includes(type)) {
+    return {
+      ...base,
+      freq_ghz: 2.4,
+      data_rate_mbps: 1000,
+      modulation: 'qpsk',
+      operation_modes: ['relay']
+    }
+  }
+
+  return base
+}
+
 function editPayload(index) {
+  console.log('editPayload called with index:', index)
   if (!editForm.value.payloads || index < 0 || index >= editForm.value.payloads.length) {
+    console.error('Invalid payload index:', index)
     return
   }
   isEditingPayload.value = true
   editingPayloadIndex.value = index
   const payload = editForm.value.payloads[index]
-  payloadForm.value = {
-    name: payload.name || '',
-    type: payload.type || 'optical',
-    resolution_m: payload.resolution_m || 2.0,
-    swath_km: payload.swath_km || 50,
-    operation_modes: payload.operation_modes || ['strip'],
-    mass_kg: payload.mass_kg || 100
+  console.log('Original payload:', JSON.parse(JSON.stringify(payload)))
+
+  // 使用深拷贝避免响应式问题
+  const payloadData = JSON.parse(JSON.stringify(payload))
+  const payloadType = payloadData.type ?? 'optical'
+
+  // 基础字段
+  const baseForm = {
+    name: payloadData.name ?? '',
+    type: payloadType,
+    operation_modes: Array.isArray(payloadData.operation_modes) ? [...payloadData.operation_modes] : [],
+    mass_kg: parseFloat(payloadData.mass_kg ?? payloadData.mass ?? 100) || 100
   }
+
+  // 根据载荷类型添加特定字段
+  if (IMAGING_PAYLOAD_TYPES.includes(payloadType)) {
+    payloadForm.value = {
+      ...baseForm,
+      resolution_m: parseFloat(payloadData.resolution_m ?? payloadData.resolution ?? 0.5) || 0.5,
+      swath_km: parseFloat(payloadData.swath_km ?? payloadData.swath ?? 10) || 10
+    }
+  } else if (COMMUNICATION_PAYLOAD_TYPES.includes(payloadType)) {
+    payloadForm.value = {
+      ...baseForm,
+      freq_ghz: parseFloat(payloadData.freq_ghz ?? 2.4) || 2.4,
+      data_rate_mbps: parseFloat(payloadData.data_rate_mbps ?? 1000) || 1000,
+      modulation: payloadData.modulation ?? 'qpsk'
+    }
+  } else {
+    payloadForm.value = baseForm
+  }
+
+  console.log('Set payloadForm:', JSON.parse(JSON.stringify(payloadForm.value)))
   payloadDialogVisible.value = true
 }
 
@@ -855,13 +1080,39 @@ function savePayloadToSatellite() {
     editForm.value.payloads = []
   }
 
-  const payloadData = {
-    name: payloadForm.value.name,
-    type: payloadForm.value.type,
-    resolution_m: payloadForm.value.resolution_m,
-    swath_km: payloadForm.value.swath_km,
-    operation_modes: payloadForm.value.operation_modes,
-    mass_kg: payloadForm.value.mass_kg
+  const payloadType = payloadForm.value.type
+  let payloadData
+
+  // 根据载荷类型构建数据
+  if (IMAGING_PAYLOAD_TYPES.includes(payloadType)) {
+    // 成像载荷数据
+    payloadData = {
+      name: payloadForm.value.name,
+      type: payloadType,
+      resolution_m: parseFloat(payloadForm.value.resolution_m) || 0.5,
+      swath_km: parseFloat(payloadForm.value.swath_km) || 10,
+      operation_modes: payloadForm.value.operation_modes,
+      mass_kg: parseFloat(payloadForm.value.mass_kg) || 100
+    }
+  } else if (COMMUNICATION_PAYLOAD_TYPES.includes(payloadType)) {
+    // 通信载荷数据
+    payloadData = {
+      name: payloadForm.value.name,
+      type: payloadType,
+      freq_ghz: parseFloat(payloadForm.value.freq_ghz) || 2.4,
+      data_rate_mbps: parseFloat(payloadForm.value.data_rate_mbps) || 1000,
+      modulation: payloadForm.value.modulation || 'qpsk',
+      operation_modes: payloadForm.value.operation_modes,
+      mass_kg: parseFloat(payloadForm.value.mass_kg) || 100
+    }
+  } else {
+    // 其他载荷类型（科学仪器等）
+    payloadData = {
+      name: payloadForm.value.name,
+      type: payloadType,
+      operation_modes: payloadForm.value.operation_modes,
+      mass_kg: parseFloat(payloadForm.value.mass_kg) || 100
+    }
   }
 
   if (isEditingPayload.value && editingPayloadIndex.value >= 0) {
@@ -927,13 +1178,13 @@ function showCreateSatelliteDialog() {
     epoch: new Date(),
     orbit_type: 'LEO',
 
-    // 载荷配置 (多载荷数组)
+    // 载荷配置 (多载荷数组) - 确保使用数值类型
     payloads: [
       {
         name: '主载荷',
         type: 'optical',
-        resolution_m: 2.0,
-        swath_km: 50,
+        resolution_m: 0.5,
+        swath_km: 10,
         operation_modes: ['strip'],
         mass_kg: 100
       }
@@ -997,49 +1248,77 @@ function editSatellite(satellite) {
   editForm.value = {
     // 基本信息
     id: satellite.id,
-    name: satellite.name || '',
-    norad_id: satellite.norad_id || '',
-    satellite_code: satellite.satellite_code || '',
-    constellation_name: satellite.constellation_name || '',
+    name: satellite.name ?? '',
+    norad_id: satellite.norad_id ?? '',
+    satellite_code: satellite.satellite_code ?? '',
+    constellation_name: satellite.constellation_name ?? '',
 
     // 轨道六根数 (NASA格式: a, e, i, Ω, ω, M)
-    semi_major_axis_km: satellite.semi_major_axis_km || 6878.137, // 地球半径 + 500km
-    eccentricity: satellite.eccentricity || 0.001,
-    inclination_deg: satellite.inclination_deg || 97.4,
-    raan_deg: satellite.raan_deg || 0,
-    arg_perigee_deg: satellite.arg_perigee_deg || 0,
-    mean_anomaly_deg: satellite.mean_anomaly_deg || 0,
-    epoch: satellite.epoch || new Date(),
-    orbit_type: satellite.orbit_type || 'LEO',
+    semi_major_axis_km: satellite.semi_major_axis_km ?? 6878.137, // 地球半径 + 500km
+    eccentricity: satellite.eccentricity ?? 0.001,
+    inclination_deg: satellite.inclination_deg ?? 97.4,
+    raan_deg: satellite.raan_deg ?? 0,
+    arg_perigee_deg: satellite.arg_perigee_deg ?? 0,
+    mean_anomaly_deg: satellite.mean_anomaly_deg ?? 0,
+    epoch: satellite.epoch ?? new Date(),
+    orbit_type: satellite.orbit_type ?? 'LEO',
 
-    // 载荷配置 (多载荷数组)
+    // 载荷配置 (多载荷数组) - 根据载荷类型处理不同字段
     payloads: satellite.payloads && satellite.payloads.length > 0
-      ? satellite.payloads.map(p => ({ ...p }))
+      ? satellite.payloads.map(p => {
+          const payloadType = p.type ?? "optical"
+          const basePayload = {
+            name: p.name ?? "",
+            type: payloadType,
+            operation_modes: p.operation_modes ?? p.modes ?? ["strip"],
+            mass_kg: parseFloat(p.mass_kg ?? p.mass ?? 100) || 100
+          }
+
+          if (COMMUNICATION_PAYLOAD_TYPES.includes(payloadType)) {
+            // 通信载荷
+            return {
+              ...basePayload,
+              freq_ghz: parseFloat(p.freq_ghz ?? 2.4) || 2.4,
+              data_rate_mbps: parseFloat(p.data_rate_mbps ?? 1000) || 1000,
+              modulation: p.modulation ?? 'qpsk'
+            }
+          } else if (IMAGING_PAYLOAD_TYPES.includes(payloadType)) {
+            // 成像载荷
+            return {
+              ...basePayload,
+              resolution_m: parseFloat(p.resolution_m ?? p.resolution ?? 0.5) || 0.5,
+              swath_km: parseFloat(p.swath_km ?? p.swath ?? 10) || 10
+            }
+          } else {
+            // 其他类型
+            return basePayload
+          }
+        })
       : [{
           name: '主载荷',
-          type: satellite.payload_type || 'optical',
-          resolution_m: satellite.resolution_m || 2.0,
-          swath_km: satellite.swath_km || 50,
-          operation_modes: satellite.operation_modes || ['strip'],
-          mass_kg: satellite.payload_mass_kg || 100
+          type: satellite.payload_type ?? 'optical',
+          resolution_m: parseFloat(satellite.resolution_m ?? 0.5) || 0.5,
+          swath_km: parseFloat(satellite.swath_km ?? 10) || 10,
+          operation_modes: satellite.operation_modes ?? ['strip'],
+          mass_kg: parseFloat(satellite.payload_mass_kg ?? 100) || 100
         }],
 
     // 能源配置
-    solar_panel_power_w: satellite.solar_panel_power_w || 500,
-    battery_capacity_ah: satellite.battery_capacity_ah || 40,
-    battery_voltage_v: satellite.battery_voltage_v || 28,
-    avg_power_consumption_w: satellite.avg_power_consumption_w || 200,
-    imaging_power_w: satellite.imaging_power_w || 80,
-    downlink_power_w: satellite.downlink_power_w || 60,
+    solar_panel_power_w: satellite.solar_panel_power_w ?? 500,
+    battery_capacity_ah: satellite.battery_capacity_ah ?? 40,
+    battery_voltage_v: satellite.battery_voltage_v ?? 28,
+    avg_power_consumption_w: satellite.avg_power_consumption_w ?? 200,
+    imaging_power_w: satellite.imaging_power_w ?? 80,
+    downlink_power_w: satellite.downlink_power_w ?? 60,
 
     // 存储配置
-    storage_capacity_gb: satellite.storage_capacity_gb || 500,
-    storage_type: satellite.storage_type || 'ssd',
-    storage_write_rate_mbps: satellite.storage_write_rate_mbps || 500,
-    storage_read_rate_mbps: satellite.storage_read_rate_mbps || 800,
-    downlink_rate_mbps: satellite.downlink_rate_mbps || 450,
-    modulation: satellite.modulation || 'qpsk',
-    antenna_gain_dbi: satellite.antenna_gain_dbi || 15
+    storage_capacity_gb: satellite.storage_capacity_gb ?? 500,
+    storage_type: satellite.storage_type ?? 'ssd',
+    storage_write_rate_mbps: satellite.storage_write_rate_mbps ?? 500,
+    storage_read_rate_mbps: satellite.storage_read_rate_mbps ?? 800,
+    downlink_rate_mbps: satellite.downlink_rate_mbps ?? 450,
+    modulation: satellite.modulation ?? 'qpsk',
+    antenna_gain_dbi: satellite.antenna_gain_dbi ?? 15
   }
   editActiveTab.value = 'basic'
   editDialogVisible.value = true

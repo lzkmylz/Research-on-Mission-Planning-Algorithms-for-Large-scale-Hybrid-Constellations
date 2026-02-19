@@ -6,7 +6,7 @@
 """
 
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from datetime import datetime
 from enum import Enum
 
@@ -49,14 +49,51 @@ class PayloadType(str, Enum):
 
 # ========== Payload Schema ==========
 
+# 需要成像参数的载荷类型
+IMAGING_PAYLOAD_TYPES = {"optical", "sar", "infrared", "multispectral"}
+# 通信载荷类型
+COMMUNICATION_PAYLOAD_TYPES = {"communication"}
+
+
 class PayloadBase(BaseModel):
-    """载荷基础Schema"""
+    """载荷基础Schema - 支持光学/SAR载荷和通信载荷"""
     name: str = Field(..., min_length=1, max_length=100, description="载荷名称")
     type: PayloadType = Field(..., description="载荷类型")
-    resolution_m: float = Field(..., gt=0, description="分辨率(米)")
-    swath_km: float = Field(..., gt=0, description="幅宽(公里)")
+
+    # 光学/SAR载荷参数（可选，取决于载荷类型）
+    resolution_m: Optional[float] = Field(None, gt=0, description="分辨率(米)")
+    swath_km: Optional[float] = Field(None, gt=0, description="幅宽(公里)")
+
+    # 通信载荷参数（可选，取决于载荷类型）
+    freq_ghz: Optional[float] = Field(None, gt=0, description="数传频段(GHz)")
+    data_rate_mbps: Optional[float] = Field(None, gt=0, description="码速率(Mbps)")
+    modulation: Optional[Modulation] = Field(None, description="调制方式")
+
     operation_modes: List[str] = Field(default=["strip"], description="工作模式")
     mass_kg: Optional[float] = Field(None, ge=0, description="质量(kg)")
+
+    @model_validator(mode="after")
+    def validate_payload_fields(self):
+        """根据载荷类型验证必填字段"""
+        payload_type = self.type.value if isinstance(self.type, PayloadType) else self.type
+
+        # 成像载荷需要 resolution_m 和 swath_km
+        if payload_type in IMAGING_PAYLOAD_TYPES:
+            if self.resolution_m is None:
+                raise ValueError(f"{payload_type} 载荷需要设置 resolution_m (分辨率)")
+            if self.swath_km is None:
+                raise ValueError(f"{payload_type} 载荷需要设置 swath_km (幅宽)")
+
+        # 通信载荷需要 freq_ghz, data_rate_mbps, modulation
+        if payload_type in COMMUNICATION_PAYLOAD_TYPES:
+            if self.freq_ghz is None:
+                raise ValueError("communication 载荷需要设置 freq_ghz (频段)")
+            if self.data_rate_mbps is None:
+                raise ValueError("communication 载荷需要设置 data_rate_mbps (码速率)")
+            if self.modulation is None:
+                raise ValueError("communication 载荷需要设置 modulation (调制方式)")
+
+        return self
 
 
 class PayloadCreate(PayloadBase):
@@ -65,11 +102,19 @@ class PayloadCreate(PayloadBase):
 
 
 class PayloadUpdate(BaseModel):
-    """更新载荷请求"""
+    """更新载荷请求 - 支持光学/SAR和通信载荷"""
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     type: Optional[PayloadType] = None
+
+    # 光学/SAR载荷参数
     resolution_m: Optional[float] = Field(None, gt=0)
     swath_km: Optional[float] = Field(None, gt=0)
+
+    # 通信载荷参数
+    freq_ghz: Optional[float] = Field(None, gt=0)
+    data_rate_mbps: Optional[float] = Field(None, gt=0)
+    modulation: Optional[Modulation] = None
+
     operation_modes: Optional[List[str]] = None
     mass_kg: Optional[float] = Field(None, ge=0)
 

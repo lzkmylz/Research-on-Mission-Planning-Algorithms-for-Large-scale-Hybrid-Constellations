@@ -27,4 +27,8 @@ export default defineConfig({
     assetsDir: "assets",
     sourcemap: true,
   },
+  test: {
+    environment: "jsdom",
+    globals: true,
+  },
 });

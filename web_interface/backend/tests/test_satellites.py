@@ -54,6 +54,33 @@ def sample_satellite_data():
 
 
 @pytest.fixture
+def sample_communication_payload():
+    """示例通信载荷数据"""
+    return {
+        "name": "通信载荷",
+        "type": "communication",
+        "freq_ghz": 2.4,
+        "data_rate_mbps": 1000.0,
+        "modulation": "qpsk",
+        "operation_modes": ["relay", "broadcast"],
+        "mass_kg": 50
+    }
+
+
+@pytest.fixture
+def sample_optical_payload():
+    """示例光学载荷数据"""
+    return {
+        "name": "光学相机",
+        "type": "optical",
+        "resolution_m": 0.5,
+        "swath_km": 20,
+        "operation_modes": ["strip", "stare"],
+        "mass_kg": 80
+    }
+
+
+@pytest.fixture
 def sample_satellite_data_minimal():
     """最小卫星数据（仅必填字段）"""
     return {
@@ -121,7 +148,14 @@ class TestSatelliteEndpoints:
         data = response.json()
         assert data["id"] == satellite_id
         assert data["name"] == sample_satellite_data["name"]
-        assert data["payloads"] == sample_satellite_data["payloads"]
+        # 验证载荷关键字段（新schema可能包含额外None字段）
+        assert len(data["payloads"]) == len(sample_satellite_data["payloads"])
+        for i, payload in enumerate(data["payloads"]):
+            original = sample_satellite_data["payloads"][i]
+            assert payload["name"] == original["name"]
+            assert payload["type"] == original["type"]
+            assert payload["resolution_m"] == original["resolution_m"]
+            assert payload["swath_km"] == original["swath_km"]
 
     def test_get_satellite_not_found(self, client):
         """测试获取不存在的卫星"""
@@ -241,6 +275,87 @@ class TestSatelliteEndpoints:
         assert result["payloads"][0]["name"] == "光学相机"
         assert result["payloads"][1]["name"] == "SAR雷达"
 
+    def test_create_satellite_with_communication_payload(self, client):
+        """测试创建带通信载荷的卫星"""
+        data = {
+            "name": "通信卫星",
+            "semi_major_axis_km": 6878.137,
+            "eccentricity": 0.001,
+            "inclination_deg": 97.4,
+            "raan_deg": 0.0,
+            "arg_perigee_deg": 0.0,
+            "mean_anomaly_deg": 0.0,
+            "orbit_type": "LEO",
+            "payloads": [
+                {
+                    "name": "通信载荷",
+                    "type": "communication",
+                    "freq_ghz": 2.4,
+                    "data_rate_mbps": 1000.0,
+                    "modulation": "qpsk",
+                    "operation_modes": ["relay", "broadcast"],
+                    "mass_kg": 50
+                }
+            ]
+        }
+        response = client.post("/api/satellites", json=data)
+        assert response.status_code == 201
+        result = response.json()
+        assert len(result["payloads"]) == 1
+        payload = result["payloads"][0]
+        assert payload["name"] == "通信载荷"
+        assert payload["type"] == "communication"
+        assert payload["freq_ghz"] == 2.4
+        assert payload["data_rate_mbps"] == 1000.0
+        assert payload["modulation"] == "qpsk"
+
+    def test_create_satellite_with_mixed_payloads(self, client):
+        """测试创建带混合载荷（光学+通信）的卫星"""
+        data = {
+            "name": "混合载荷卫星",
+            "semi_major_axis_km": 6878.137,
+            "eccentricity": 0.001,
+            "inclination_deg": 97.4,
+            "raan_deg": 0.0,
+            "arg_perigee_deg": 0.0,
+            "mean_anomaly_deg": 0.0,
+            "orbit_type": "LEO",
+            "payloads": [
+                {
+                    "name": "光学相机",
+                    "type": "optical",
+                    "resolution_m": 0.5,
+                    "swath_km": 20,
+                    "operation_modes": ["strip", "stare"],
+                    "mass_kg": 80
+                },
+                {
+                    "name": "通信载荷",
+                    "type": "communication",
+                    "freq_ghz": 2.4,
+                    "data_rate_mbps": 1000.0,
+                    "modulation": "8psk",
+                    "operation_modes": ["relay"],
+                    "mass_kg": 50
+                }
+            ]
+        }
+        response = client.post("/api/satellites", json=data)
+        assert response.status_code == 201
+        result = response.json()
+        assert len(result["payloads"]) == 2
+        # 验证光学载荷
+        optical = result["payloads"][0]
+        assert optical["type"] == "optical"
+        assert optical["resolution_m"] == 0.5
+        assert optical["swath_km"] == 20
+        # 验证通信载荷
+        comm = result["payloads"][1]
+        assert comm["type"] == "communication"
+        assert comm["freq_ghz"] == 2.4
+        assert comm["data_rate_mbps"] == 1000.0
+        assert comm["modulation"] == "8psk"
+
 
 class TestSatelliteEdgeCases:
     """卫星API边界情况测试"""
@@ -312,3 +427,131 @@ class TestSatelliteEdgeCases:
         invalid_data["inclination_deg"] = 200
         response = client.post("/api/satellites", json=invalid_data)
         assert response.status_code == 422
+
+
+class TestCommunicationPayloadValidation:
+    """通信载荷验证测试"""
+
+    def test_communication_payload_missing_freq(self, client):
+        """测试通信载荷缺少频段参数"""
+        data = {
+            "name": "通信卫星",
+            "semi_major_axis_km": 6878.137,
+            "eccentricity": 0.001,
+            "inclination_deg": 97.4,
+            "raan_deg": 0.0,
+            "arg_perigee_deg": 0.0,
+            "mean_anomaly_deg": 0.0,
+            "orbit_type": "LEO",
+            "payloads": [
+                {
+                    "name": "通信载荷",
+                    "type": "communication",
+                    # 缺少 freq_ghz
+                    "data_rate_mbps": 1000.0,
+                    "modulation": "qpsk"
+                }
+            ]
+        }
+        response = client.post("/api/satellites", json=data)
+        assert response.status_code == 422
+        assert "freq_ghz" in response.text or "频段" in response.text
+
+    def test_communication_payload_missing_data_rate(self, client):
+        """测试通信载荷缺少码速率参数"""
+        data = {
+            "name": "通信卫星",
+            "semi_major_axis_km": 6878.137,
+            "eccentricity": 0.001,
+            "inclination_deg": 97.4,
+            "raan_deg": 0.0,
+            "arg_perigee_deg": 0.0,
+            "mean_anomaly_deg": 0.0,
+            "orbit_type": "LEO",
+            "payloads": [
+                {
+                    "name": "通信载荷",
+                    "type": "communication",
+                    "freq_ghz": 2.4,
+                    # 缺少 data_rate_mbps
+                    "modulation": "qpsk"
+                }
+            ]
+        }
+        response = client.post("/api/satellites", json=data)
+        assert response.status_code == 422
+        assert "data_rate" in response.text or "码速率" in response.text
+
+    def test_communication_payload_missing_modulation(self, client):
+        """测试通信载荷缺少调制方式参数"""
+        data = {
+            "name": "通信卫星",
+            "semi_major_axis_km": 6878.137,
+            "eccentricity": 0.001,
+            "inclination_deg": 97.4,
+            "raan_deg": 0.0,
+            "arg_perigee_deg": 0.0,
+            "mean_anomaly_deg": 0.0,
+            "orbit_type": "LEO",
+            "payloads": [
+                {
+                    "name": "通信载荷",
+                    "type": "communication",
+                    "freq_ghz": 2.4,
+                    "data_rate_mbps": 1000.0
+                    # 缺少 modulation
+                }
+            ]
+        }
+        response = client.post("/api/satellites", json=data)
+        assert response.status_code == 422
+        assert "modulation" in response.text or "调制" in response.text
+
+    def test_optical_payload_missing_resolution(self, client):
+        """测试光学载荷缺少分辨率参数"""
+        data = {
+            "name": "光学卫星",
+            "semi_major_axis_km": 6878.137,
+            "eccentricity": 0.001,
+            "inclination_deg": 97.4,
+            "raan_deg": 0.0,
+            "arg_perigee_deg": 0.0,
+            "mean_anomaly_deg": 0.0,
+            "orbit_type": "LEO",
+            "payloads": [
+                {
+                    "name": "光学相机",
+                    "type": "optical",
+                    # 缺少 resolution_m
+                    "swath_km": 20,
+                    "operation_modes": ["strip"]
+                }
+            ]
+        }
+        response = client.post("/api/satellites", json=data)
+        assert response.status_code == 422
+        assert "resolution" in response.text or "分辨率" in response.text
+
+    def test_optical_payload_missing_swath(self, client):
+        """测试光学载荷缺少幅宽参数"""
+        data = {
+            "name": "光学卫星",
+            "semi_major_axis_km": 6878.137,
+            "eccentricity": 0.001,
+            "inclination_deg": 97.4,
+            "raan_deg": 0.0,
+            "arg_perigee_deg": 0.0,
+            "mean_anomaly_deg": 0.0,
+            "orbit_type": "LEO",
+            "payloads": [
+                {
+                    "name": "光学相机",
+                    "type": "optical",
+                    "resolution_m": 0.5
+                    # 缺少 swath_km
+                }
+            ]
+        }
+        response = client.post("/api/satellites", json=data)
+        assert response.status_code == 422
+        assert "swath" in response.text or "幅宽" in response.text
